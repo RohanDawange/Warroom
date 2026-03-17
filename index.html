@@ -1,0 +1,4089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0B0F1A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="War Room">
+<meta name="description" content="GATE 2027 – Rohan's personal strategic preparation system">
+<link id="pwa-manifest" rel="manifest" href="#">
+<title>GATE 2027 – Rohan's War Room</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ============================================
+   ROOT VARIABLES & RESET
+   ============================================ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0B0F1A;
+  --card:#121826;
+  --card2:#161d2e;
+  --card3:#1a2235;
+  --mint:#00F5A0;
+  --mint-dim:rgba(0,245,160,0.12);
+  --blue:#5B8CFF;
+  --blue-dim:rgba(91,140,255,0.12);
+  --red:#FF3B3B;
+  --red-dim:rgba(255,59,59,0.12);
+  --orange:#FF9F4A;
+  --yellow:#FFB547;
+  --purple:#C97FFF;
+  --teal:#4ADECD;
+  --text:#E6EDF3;
+  --muted:#8B949E;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --glow-mint:0 0 24px rgba(0,245,160,0.2);
+  --glow-blue:0 0 24px rgba(91,140,255,0.2);
+  --glow-red:0 0 24px rgba(255,59,59,0.25);
+  --r:18px;--r2:12px;--r3:8px;
+  --transition:all 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow:hidden;font-size:14px;}
+h1,h2,h3,.poppins{font-family:'Poppins',sans-serif;}
+.num{font-family:'Space Grotesk',sans-serif;}
+input,textarea,select,button{font-family:'Inter',sans-serif;}
+button{cursor:pointer;}
+a{color:var(--mint);text-decoration:none;}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;}
+
+/* ============================================
+   APP SHELL
+   ============================================ */
+#app{
+  display:flex;flex-direction:column;
+  height:100%;max-width:430px;
+  margin:0 auto;position:relative;
+  overflow:hidden;
+  background:var(--bg);
+}
+#screen-area{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding-bottom:80px;scroll-behavior:smooth;
+}
+
+/* ============================================
+   BOTTOM NAV
+   ============================================ */
+#bottom-nav{
+  position:absolute;bottom:0;left:0;right:0;
+  height:68px;
+  background:rgba(14,19,31,0.97);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;
+  justify-content:space-around;z-index:100;
+}
+.nav-btn{
+  display:flex;flex-direction:column;
+  align-items:center;gap:3px;cursor:pointer;
+  padding:8px 12px;border-radius:10px;
+  border:none;background:transparent;
+  color:var(--muted);transition:var(--transition);
+  min-width:52px;
+}
+.nav-btn.active{color:var(--mint);}
+.nav-btn.active .nav-icon{
+  filter:drop-shadow(0 0 6px rgba(0,245,160,0.6));
+  transform:translateY(-1px);
+}
+.nav-icon{font-size:19px;transition:var(--transition);}
+.nav-label{font-size:9.5px;font-weight:500;letter-spacing:.4px;text-transform:uppercase;}
+
+/* ============================================
+   FAB
+   ============================================ */
+#fab{
+  position:absolute;bottom:78px;right:16px;
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,var(--mint),#00C47F);
+  color:#0B0F1A;font-size:22px;font-weight:700;
+  border:none;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--glow-mint),0 4px 20px rgba(0,0,0,0.4);
+  transition:var(--transition);z-index:101;
+}
+#fab:hover{transform:scale(1.1) rotate(90deg);}
+
+/* ============================================
+   SCREENS
+   ============================================ */
+.screen{display:none;animation:screenIn .3s ease;}
+.screen.active{display:block;}
+@keyframes screenIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============================================
+   SHARED COMPONENTS
+   ============================================ */
+.card{
+  background:var(--card);border-radius:var(--r);
+  padding:18px;border:1px solid var(--border);
+  transition:var(--transition);
+}
+.card.mint-accent{border-color:rgba(0,245,160,0.18);box-shadow:var(--glow-mint);}
+.card.blue-accent{border-color:rgba(91,140,255,0.18);box-shadow:var(--glow-blue);}
+.card.red-accent{border-color:rgba(255,59,59,0.2);box-shadow:var(--glow-red);}
+
+.section-pad{padding:0 18px;}
+.section-gap{margin-bottom:16px;}
+
+.screen-header{padding:22px 18px 16px;}
+.screen-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;margin-bottom:3px;}
+.screen-sub{font-size:12px;color:var(--muted);font-weight:400;}
+
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 8px;border-radius:6px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+}
+.badge-high{background:rgba(255,59,59,.15);color:#FF7070;}
+.badge-med{background:rgba(255,181,71,.12);color:#FFB547;}
+.badge-low{background:rgba(91,140,255,.12);color:#7FA8FF;}
+.badge-done{background:rgba(0,245,160,.1);color:var(--mint);}
+.badge-weak{background:rgba(255,59,59,.12);color:#FF7070;}
+.badge-strong{background:rgba(0,245,160,.1);color:var(--mint);}
+
+.divider{height:1px;background:var(--border);margin:12px 0;}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--mint),#00C47F);
+  color:#0B0F1A;border:none;border-radius:12px;
+  padding:13px 24px;font-size:14px;font-weight:700;
+  font-family:'Poppins',sans-serif;
+  transition:var(--transition);width:100%;
+  box-shadow:0 4px 20px rgba(0,245,160,0.25);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,245,160,0.35);}
+.btn-primary:active{transform:scale(0.98);}
+
+.btn-ghost{
+  background:var(--card2);color:var(--text);
+  border:1px solid var(--border);border-radius:12px;
+  padding:12px 20px;font-size:13px;font-weight:500;
+  transition:var(--transition);
+}
+.btn-ghost:hover{border-color:rgba(0,245,160,0.25);background:rgba(0,245,160,0.05);}
+
+.input-field{
+  width:100%;background:var(--card2);
+  border:1px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-size:13px;
+  outline:none;transition:var(--transition);
+}
+.input-field:focus{border-color:rgba(0,245,160,0.35);box-shadow:0 0 0 3px rgba(0,245,160,0.08);}
+.input-field::placeholder{color:var(--muted);}
+
+select.input-field option{background:#161d2e;color:var(--text);}
+textarea.input-field{resize:vertical;min-height:80px;line-height:1.5;}
+
+.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block;}
+.form-row{margin-bottom:14px;}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* Checkbox */
+.check-box{
+  width:20px;height:20px;border-radius:6px;
+  border:1.5px solid var(--muted);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--transition);
+}
+.check-box.done{background:var(--mint);border-color:var(--mint);}
+.check-box.done::after{content:'✓';font-size:11px;font-weight:700;color:#0B0F1A;}
+
+/* Progress bar */
+.prog-bg{height:4px;background:rgba(255,255,255,0.07);border-radius:100px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
+
+/* Tabs */
+.tab-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-pill{
+  padding:8px 16px;border-radius:20px;
+  border:1px solid var(--border);font-size:12px;
+  font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:var(--transition);color:var(--muted);
+  background:var(--card);
+}
+.tab-pill.active{
+  background:var(--mint);color:#0B0F1A;
+  border-color:var(--mint);box-shadow:var(--glow-mint);
+}
+
+/* Empty state */
+.empty-state{
+  text-align:center;padding:48px 24px;
+  color:var(--muted);font-size:13px;
+}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-msg{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;}
+
+/* ============================================
+   WAR MODE OVERLAY
+   ============================================ */
+#war-overlay{
+  display:none;position:absolute;inset:0;
+  pointer-events:none;z-index:50;
+  border:1px solid rgba(255,59,59,0.12);
+  box-shadow:inset 0 0 80px rgba(255,59,59,0.06);
+  animation:warPulse 4s ease-in-out infinite;
+}
+@keyframes warPulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+/* ============================================
+   HOME SCREEN
+   ============================================ */
+#home-screen{padding:0;}
+
+.home-hero{
+  padding:24px 18px 20px;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 100% 80% at 65% -10%,rgba(0,245,160,0.09) 0%,transparent 65%),
+             radial-gradient(ellipse 60% 50% at 20% 100%,rgba(91,140,255,0.06) 0%,transparent 60%);
+  animation:heroBreathe 7s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes heroBreathe{0%,100%{opacity:.8}50%{opacity:1}}
+
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.15);
+  border-radius:20px;padding:4px 12px;
+  font-size:10px;font-weight:600;color:var(--mint);
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
+}
+.hero-chip::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px rgba(0,245,160,0.8);animation:blink 1.8s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.countdown-num{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:80px;font-weight:700;
+  color:var(--mint);line-height:1;
+  text-shadow:0 0 50px rgba(0,245,160,0.35);
+  transition:color .5s,text-shadow .5s;
+}
+.countdown-num.war{
+  color:var(--red);
+  text-shadow:0 0 50px rgba(255,59,59,0.4);
+}
+.countdown-label{font-size:12px;color:var(--muted);margin-top:4px;margin-bottom:10px;}
+.countdown-label strong{color:var(--text);}
+.exam-quote{
+  font-family:'Poppins',sans-serif;font-size:13px;
+  font-weight:600;color:rgba(230,237,243,0.6);
+  border-left:2px solid var(--mint);
+  padding-left:10px;margin-bottom:18px;
+}
+.year-track{
+  background:rgba(255,255,255,0.05);
+  border-radius:100px;height:3px;
+  margin-bottom:4px;overflow:hidden;
+}
+.year-fill{
+  height:100%;border-radius:100px;
+  background:linear-gradient(90deg,var(--blue),var(--mint));
+  transition:width 1.5s ease;
+}
+.year-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);}
+
+.stats-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;padding:0 18px 16px;
+}
+.stat-mini{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:14px;padding:14px 10px;text-align:center;
+  cursor:pointer;transition:var(--transition);
+}
+.stat-mini:hover{transform:translateY(-2px);border-color:rgba(0,245,160,0.2);}
+.stat-mini-val{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;}
+.stat-mini-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:3px;}
+
+.qa-section{padding:0 18px;margin-bottom:18px;}
+.qa-section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-bottom:10px;}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.qa-card{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:14px;padding:16px 14px;
+  display:flex;align-items:center;gap:10px;
+  transition:var(--transition);color:var(--text);
+  text-align:left;
+}
+.qa-card:hover{border-color:rgba(0,245,160,0.25);background:rgba(0,245,160,0.04);transform:translateY(-1px);}
+.qa-card-icon{font-size:20px;flex-shrink:0;}
+.qa-card-text{font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;line-height:1.3;}
+
+.today-plan{margin:0 18px 18px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;}
+.today-plan-head{
+  padding:13px 16px;background:rgba(0,245,160,0.04);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px rgba(0,245,160,0.7);flex-shrink:0;}
+.today-plan-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;}
+.today-plan-date{font-size:11px;color:var(--muted);margin-left:auto;}
+
+.task-row{
+  padding:12px 16px;display:flex;align-items:center;
+  gap:12px;border-bottom:1px solid rgba(255,255,255,0.03);
+  transition:var(--transition);
+}
+.task-row:last-child{border-bottom:none;}
+.task-row.done-row .task-row-title{text-decoration:line-through;opacity:.5;}
+.task-subject-bar{width:3px;height:38px;border-radius:3px;flex-shrink:0;}
+.task-row-info{flex:1;min-width:0;}
+.task-row-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.task-row-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ============================================
+   PLANNER SCREEN
+   ============================================ */
+#planner-screen{padding:0;}
+.planner-pad{padding:0 18px;}
+
+.phase-indicator{
+  padding:13px 16px;
+  border-radius:12px;margin-bottom:14px;
+}
+.phase-title{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.phase-desc{font-size:11px;color:var(--muted);}
+
+.planner-card{
+  background:var(--card2);border-radius:14px;
+  padding:14px;margin-bottom:10px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+  transition:var(--transition);
+}
+.planner-card:hover{border-color:rgba(255,255,255,0.1);}
+.planner-card.done-card{opacity:.45;}
+.planner-card.done-card .planner-task-title{text-decoration:line-through;}
+.planner-color{width:4px;height:52px;border-radius:4px;flex-shrink:0;}
+.planner-body{flex:1;min-width:0;}
+.planner-task-title{font-size:13px;font-weight:500;margin-bottom:5px;}
+.planner-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.planner-time{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+
+/* Add task form */
+.add-task-panel{
+  background:var(--card);border-radius:var(--r);
+  padding:18px;margin-bottom:14px;
+  border:1px solid rgba(0,245,160,0.15);
+  display:none;
+}
+.add-task-panel.open{display:block;animation:screenIn .25s ease;}
+.add-task-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px;}
+
+/* ============================================
+   DIARY SCREEN
+   ============================================ */
+#diary-screen{padding:0;}
+
+.diary-entry-card{
+  background:var(--card2);border-radius:14px;
+  padding:14px 16px;margin-bottom:10px;
+  border:1px solid var(--border);
+  cursor:pointer;transition:var(--transition);
+}
+.diary-entry-card:hover{border-color:rgba(0,245,160,0.2);transform:translateY(-1px);}
+.diary-entry-date{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--mint);font-weight:600;margin-bottom:4px;}
+.diary-entry-subject{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;margin-bottom:3px;}
+.diary-entry-topic{font-size:12px;color:var(--muted);}
+.diary-entry-footer{display:flex;align-items:center;gap:10px;margin-top:8px;}
+.diary-hrs{font-size:11px;color:var(--muted);}
+.rating-dots{display:flex;gap:3px;}
+.rating-dot{width:6px;height:6px;border-radius:50%;}
+
+/* ============================================
+   STATS SCREEN
+   ============================================ */
+#stats-screen{padding:0;}
+
+.stats-summary-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.stats-mini-card{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:14px;padding:14px 12px;text-align:center;
+}
+.stats-mini-val{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;}
+.stats-mini-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:3px;}
+
+.chart-card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:18px;margin-bottom:14px;position:relative;}
+.chart-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;margin-bottom:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;}
+
+.subject-stat-row{
+  background:var(--card2);border-radius:12px;
+  padding:12px 14px;margin-bottom:8px;
+  border:1px solid var(--border);
+}
+.subj-stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.subj-stat-left{display:flex;align-items:center;gap:8px;}
+.subj-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+.subj-name{font-size:13px;font-weight:500;}
+.subj-hrs{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--mint);}
+
+/* Mock tab */
+.mock-card{
+  background:var(--card2);border-radius:14px;
+  padding:16px;margin-bottom:10px;
+  border:1px solid var(--border);
+  transition:var(--transition);
+}
+.mock-card:hover{border-color:rgba(91,140,255,0.2);}
+.mock-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.mock-num{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;}
+.mock-date{font-size:11px;color:var(--muted);}
+.mock-score-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.mock-score-box{background:var(--card);border-radius:10px;padding:10px 8px;text-align:center;}
+.mock-score-val{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;}
+.mock-score-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.mock-topics{margin-top:10px;}
+.mock-topic-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.mock-topic-row:last-child{border-bottom:none;}
+.mock-topic-name{font-size:12px;color:var(--muted);}
+.mock-topic-acc{font-size:12px;font-weight:600;}
+
+/* ============================================
+   VAULT SCREEN
+   ============================================ */
+#vault-screen{padding:0;}
+
+.vault-search{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:12px;padding:11px 14px;margin-bottom:14px;
+}
+.vault-search input{
+  background:transparent;border:none;outline:none;
+  color:var(--text);font-size:13px;flex:1;
+}
+.vault-search input::placeholder{color:var(--muted);}
+
+.vault-accordion{margin-bottom:10px;border-radius:14px;overflow:hidden;border:1px solid var(--border);}
+.vault-acc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card2);padding:14px 16px;cursor:pointer;
+  transition:var(--transition);
+}
+.vault-acc-head:hover{background:var(--card3);}
+.vault-acc-subj{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;}
+.vault-acc-right{display:flex;align-items:center;gap:10px;}
+.vault-acc-count{font-size:11px;color:var(--blue);font-weight:600;}
+.vault-chevron{font-size:12px;color:var(--muted);transition:transform .25s ease;}
+.vault-chevron.open{transform:rotate(180deg);}
+.vault-acc-body{display:none;background:var(--card2);padding:10px;}
+.vault-acc-body.open{display:block;}
+.formula-item{
+  background:var(--card);border-radius:10px;
+  padding:14px;margin-bottom:8px;
+  border:1px solid var(--border);
+  position:relative;
+}
+.formula-item:last-child{margin-bottom:0;}
+.formula-star-btn{
+  position:absolute;top:12px;right:12px;
+  background:none;border:none;font-size:18px;
+  color:var(--muted);transition:var(--transition);
+  cursor:pointer;
+}
+.formula-star-btn.on{color:#FFB547;}
+.formula-expr{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:15px;font-weight:600;color:var(--mint);
+  margin-bottom:6px;margin-right:28px;
+}
+.formula-exp{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px;}
+.formula-example{font-size:11px;color:var(--blue);background:rgba(91,140,255,0.08);padding:6px 10px;border-radius:7px;margin-top:6px;}
+
+/* ============================================
+   MISTAKE NOTEBOOK
+   ============================================ */
+#mistakes-screen{padding:0;}
+
+.mistake-card{
+  background:var(--card2);border-radius:14px;
+  padding:14px 16px;margin-bottom:10px;
+  border:1px solid var(--border);
+  border-left:3px solid var(--red);
+  transition:var(--transition);
+}
+.mistake-card:hover{border-color:rgba(255,59,59,0.3);}
+.mistake-card.type-silly{border-left-color:var(--yellow);}
+.mistake-card.type-time{border-left-color:var(--blue);}
+.mistake-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.mistake-mock{font-size:11px;color:var(--muted);}
+.mistake-type{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.5px;}
+.mt-conceptual{background:rgba(255,59,59,.12);color:#FF7070;}
+.mt-silly{background:rgba(255,181,71,.12);color:#FFB547;}
+.mt-time{background:rgba(91,140,255,.12);color:#7FA8FF;}
+.mistake-topic{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;margin-bottom:4px;}
+.mistake-lesson{font-size:12px;color:var(--muted);line-height:1.5;}
+.mistake-repeat{
+  margin-top:8px;font-size:10px;
+  color:#FF7070;display:flex;align-items:center;gap:5px;font-weight:600;
+}
+
+/* ============================================
+   PYQ SCREEN
+   ============================================ */
+#pyq-screen{padding:0;}
+
+.pyq-filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;}
+.pyq-filter-row::-webkit-scrollbar{display:none;}
+.pyq-pill{
+  padding:7px 14px;border-radius:20px;
+  border:1px solid var(--border);font-size:11px;
+  font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:var(--transition);color:var(--muted);
+  background:var(--card);flex-shrink:0;
+}
+.pyq-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:var(--glow-blue);}
+
+.pyq-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.pyq-stat{background:var(--card2);border-radius:12px;padding:12px 10px;text-align:center;border:1px solid var(--border);}
+.pyq-stat-val{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;}
+.pyq-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+
+.pyq-item{
+  background:var(--card2);border-radius:12px;
+  padding:14px;margin-bottom:9px;
+  border:1px solid var(--border);
+  transition:var(--transition);
+}
+.pyq-item:hover{border-color:rgba(91,140,255,0.2);}
+.pyq-item.correct{border-left:3px solid var(--mint);}
+.pyq-item.wrong{border-left:3px solid var(--red);}
+.pyq-item.unattempted{border-left:3px solid var(--muted);}
+.pyq-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.pyq-year{font-family:'Space Grotesk',sans-serif;font-size:11px;color:var(--blue);font-weight:700;}
+.pyq-subj{font-size:11px;color:var(--muted);}
+.pyq-q{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:8px;}
+.pyq-bottom{display:flex;align-items:center;gap:8px;}
+.pyq-status-btn{
+  padding:5px 12px;border-radius:7px;font-size:11px;
+  font-weight:600;border:1px solid var(--border);
+  background:var(--card);color:var(--muted);cursor:pointer;
+  transition:var(--transition);
+}
+.pyq-status-btn.correct{background:rgba(0,245,160,.12);color:var(--mint);border-color:rgba(0,245,160,.2);}
+.pyq-status-btn.wrong{background:rgba(255,59,59,.1);color:#FF7070;border-color:rgba(255,59,59,.2);}
+.pyq-repeat-flag{font-size:10px;color:#FFB547;font-weight:600;display:flex;align-items:center;gap:4px;}
+
+/* ============================================
+   SETTINGS SCREEN
+   ============================================ */
+#settings-screen{padding:0;}
+
+.settings-section{margin-bottom:20px;}
+.settings-section-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;padding:0 18px;}
+.settings-item{
+  background:var(--card2);margin:0 18px 6px;
+  border-radius:12px;padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--border);
+  transition:var(--transition);
+}
+.settings-item:hover{border-color:rgba(255,255,255,0.1);}
+.settings-item-left{display:flex;align-items:center;gap:12px;}
+.settings-icon{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.settings-text-wrap{} 
+.settings-item-title{font-size:13px;font-weight:500;}
+.settings-item-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+
+/* Toggle switch */
+.toggle-sw{
+  width:44px;height:25px;background:rgba(255,255,255,.1);
+  border-radius:13px;cursor:pointer;position:relative;
+  transition:background .25s ease;flex-shrink:0;
+}
+.toggle-sw.on{background:var(--mint);}
+.toggle-sw::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:19px;height:19px;background:#fff;border-radius:50%;
+  transition:transform .25s ease;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.toggle-sw.on::after{transform:translateX(19px);}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+#toast-container{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  z-index:500;display:flex;flex-direction:column;gap:8px;
+  width:calc(100% - 32px);max-width:390px;pointer-events:none;
+}
+.toast{
+  background:var(--card3);border:1px solid var(--border2);
+  border-radius:14px;padding:13px 16px;
+  display:flex;align-items:flex-start;gap:12px;
+  pointer-events:all;
+  animation:toastIn .35s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  position:relative;overflow:hidden;
+}
+.toast.removing{animation:toastOut .25s ease forwards;}
+.toast-progress{
+  position:absolute;bottom:0;left:0;height:2px;
+  border-radius:0 0 14px 14px;
+  animation:toastProgress linear forwards;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(-12px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0) scale(1);}to{opacity:0;transform:translateY(-8px) scale(.95);}}
+@keyframes toastProgress{from{width:100%}to{width:0%}}
+.toast-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.toast-body{flex:1;min-width:0;}
+.toast-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;margin-bottom:2px;}
+.toast-msg{font-size:12px;color:var(--muted);line-height:1.4;}
+.toast-close{font-size:14px;color:var(--muted);cursor:pointer;flex-shrink:0;padding:2px 4px;line-height:1;}
+.toast-close:hover{color:var(--text);}
+.toast.t-mint{border-color:rgba(0,245,160,0.25);}
+.toast.t-mint .toast-progress{background:var(--mint);}
+.toast.t-blue{border-color:rgba(91,140,255,0.25);}
+.toast.t-blue .toast-progress{background:var(--blue);}
+.toast.t-red{border-color:rgba(255,59,59,0.3);}
+.toast.t-red .toast-progress{background:var(--red);}
+.toast.t-yellow{border-color:rgba(255,181,71,0.25);}
+.toast.t-yellow .toast-progress{background:var(--yellow);}
+
+/* ============================================
+   NOTIFICATION BELL + BADGE
+   ============================================ */
+#notif-bell-wrap{
+  position:absolute;top:20px;right:18px;
+  z-index:90;
+}
+#notif-bell{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--card2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;transition:var(--transition);
+  position:relative;
+}
+#notif-bell:hover{border-color:rgba(0,245,160,0.3);}
+#notif-badge{
+  position:absolute;top:-3px;right:-3px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 0 8px rgba(255,59,59,0.6);
+  font-family:'Space Grotesk',sans-serif;
+}
+#notif-badge.show{display:flex;}
+
+/* ============================================
+   NOTIFICATION CENTER PANEL
+   ============================================ */
+#notif-panel{
+  position:absolute;top:0;right:0;
+  width:100%;height:100%;
+  background:var(--bg);z-index:400;
+  display:none;flex-direction:column;
+  animation:slideFromRight .3s ease;
+}
+#notif-panel.open{display:flex;}
+@keyframes slideFromRight{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.notif-panel-head{
+  padding:20px 18px 14px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+}
+.notif-panel-back{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--card2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+  transition:var(--transition);
+}
+.notif-panel-back:hover{background:var(--card3);}
+.notif-panel-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;flex:1;}
+.notif-clear-btn{font-size:12px;color:var(--muted);cursor:pointer;padding:6px 10px;border-radius:8px;background:var(--card2);border:1px solid var(--border);transition:var(--transition);}
+.notif-clear-btn:hover{color:var(--red);border-color:rgba(255,59,59,0.3);}
+.notif-list{flex:1;overflow-y:auto;padding:14px 18px;}
+.notif-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px;margin-bottom:8px;
+  background:var(--card2);border-radius:14px;
+  border:1px solid var(--border);
+  transition:var(--transition);position:relative;
+  cursor:pointer;
+}
+.notif-item:hover{border-color:rgba(255,255,255,0.12);}
+.notif-item.unread{border-color:rgba(0,245,160,0.18);}
+.notif-item.unread::before{
+  content:'';position:absolute;top:14px;right:14px;
+  width:7px;height:7px;border-radius:50%;background:var(--mint);
+  box-shadow:0 0 6px rgba(0,245,160,0.7);
+}
+.notif-item-icon{font-size:22px;flex-shrink:0;}
+.notif-item-body{flex:1;min-width:0;}
+.notif-item-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;margin-bottom:3px;}
+.notif-item-msg{font-size:12px;color:var(--muted);line-height:1.45;}
+.notif-item-time{font-size:10px;color:var(--muted);margin-top:5px;font-family:'Space Grotesk',sans-serif;}
+.notif-empty{text-align:center;padding:48px 24px;color:var(--muted);}
+.notif-empty-icon{font-size:40px;margin-bottom:12px;}
+.notif-section-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin:14px 0 8px;}
+
+/* ============================================
+   REMINDER SETTINGS (inside settings screen)
+   ============================================ */
+.reminder-detail-card{
+  background:var(--card);border:1px solid rgba(0,245,160,0.15);
+  border-radius:14px;padding:16px;margin:0 18px 8px;
+  display:none;
+}
+.reminder-detail-card.open{display:block;animation:screenIn .25s ease;}
+.reminder-time-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.reminder-time-row:last-child{border-bottom:none;}
+.reminder-time-label{font-size:13px;font-weight:500;}
+.reminder-time-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.reminder-time-input{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:8px;padding:7px 10px;color:var(--text);
+  font-size:12px;outline:none;width:90px;text-align:center;
+}
+.reminder-time-input:focus{border-color:rgba(0,245,160,0.35);}
+
+/* Profile avatar */
+.profile-avatar{
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--mint),var(--blue));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Poppins',sans-serif;font-size:20px;font-weight:700;
+  color:#0B0F1A;flex-shrink:0;
+}
+
+/* ============================================
+   FOCUS TIMER MODAL
+   ============================================ */
+#timer-modal{
+  display:none;position:absolute;inset:0;
+  background:rgba(11,15,26,0.97);z-index:300;
+  flex-direction:column;align-items:center;
+  justify-content:center;padding:24px;
+}
+#timer-modal.open{display:flex;animation:screenIn .3s ease;}
+
+.timer-close-btn{
+  position:absolute;top:16px;right:16px;
+  width:38px;height:38px;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;
+  color:var(--muted);font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:var(--transition);
+}
+.timer-close-btn:hover{background:var(--card2);}
+
+.timer-mode-label{
+  font-family:'Poppins',sans-serif;font-size:11px;
+  font-weight:700;color:var(--muted);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:20px;
+}
+.timer-mode-tabs{display:flex;gap:8px;margin-bottom:32px;}
+.timer-mode-btn{
+  padding:8px 18px;border-radius:20px;
+  border:1px solid var(--border);font-size:12px;
+  font-weight:600;cursor:pointer;
+  color:var(--muted);background:var(--card);
+  transition:var(--transition);
+}
+.timer-mode-btn.active{background:var(--mint);color:#0B0F1A;border-color:var(--mint);}
+
+.timer-ring-wrap{
+  position:relative;width:220px;height:220px;margin-bottom:22px;
+}
+#timer-ring-svg{width:100%;height:100%;}
+.timer-center{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.timer-clock{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:52px;font-weight:700;
+  color:var(--text);line-height:1;
+}
+.timer-phase-label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+
+.timer-motivate{
+  font-size:12px;color:var(--muted);
+  text-align:center;margin-bottom:24px;
+  max-width:260px;font-style:italic;line-height:1.5;
+}
+.timer-btns{display:flex;gap:12px;}
+.timer-btn-main{
+  padding:14px 32px;border-radius:13px;
+  border:none;font-size:14px;font-weight:700;
+  font-family:'Poppins',sans-serif;cursor:pointer;
+  transition:var(--transition);
+}
+.timer-btn-main.start{background:var(--mint);color:#0B0F1A;box-shadow:var(--glow-mint);}
+.timer-btn-main.start:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,245,160,0.4);}
+.timer-btn-reset{
+  padding:14px 20px;border-radius:13px;
+  background:var(--card);border:1px solid var(--border);
+  color:var(--text);font-size:14px;font-weight:600;
+  font-family:'Poppins',sans-serif;cursor:pointer;
+  transition:var(--transition);
+}
+.timer-btn-reset:hover{background:var(--card2);}
+.timer-session-info{
+  margin-top:20px;display:flex;gap:16px;
+  font-size:11px;color:var(--muted);
+}
+.timer-session-stat{text-align:center;}
+.timer-session-val{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--text);display:block;}
+
+/* Flash animation on completion */
+@keyframes timerFlash{
+  0%{opacity:1}25%{opacity:.1}50%{opacity:1}75%{opacity:.1}100%{opacity:1}
+}
+.flash-complete{animation:timerFlash .6s ease 3;}
+
+/* ============================================
+   QUICK ADD MODAL
+   ============================================ */
+#quick-add-modal{
+  display:none;position:absolute;inset:0;
+  background:rgba(11,15,26,0.92);z-index:200;
+  align-items:flex-end;justify-content:center;
+}
+#quick-add-modal.open{display:flex;animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.quick-add-panel{
+  background:var(--card);border-radius:24px 24px 0 0;
+  padding:22px 20px 32px;width:100%;
+  border:1px solid var(--border2);
+}
+.quick-add-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:18px;}
+.quick-add-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.quick-opt{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:14px;padding:18px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  cursor:pointer;transition:var(--transition);color:var(--text);
+}
+.quick-opt:hover{border-color:rgba(0,245,160,0.25);background:rgba(0,245,160,0.04);}
+.quick-opt-icon{font-size:24px;}
+.quick-opt-label{font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;}
+
+/* ============================================
+   RESPONSIVE: DESKTOP PREVIEW FRAME
+   ============================================ */
+@media(min-width:500px){
+  #app{box-shadow:0 0 60px rgba(0,0,0,0.5);}
+}
+
+/* ============================================
+   PWA INSTALL BANNER
+   ============================================ */
+#pwa-install-banner{
+  position:absolute;bottom:76px;left:12px;right:12px;
+  background:var(--card3);border:1px solid rgba(0,245,160,0.25);
+  border-radius:16px;padding:14px 16px;
+  display:none;align-items:center;gap:12px;
+  z-index:150;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),var(--glow-mint);
+  animation:slideUp .35s cubic-bezier(0.34,1.56,0.64,1);
+}
+#pwa-install-banner.show{display:flex;}
+.pwa-banner-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,#0B0F1A,#161d2e);
+  border:1px solid rgba(0,245,160,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.pwa-banner-text{flex:1;}
+.pwa-banner-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;margin-bottom:2px;}
+.pwa-banner-sub{font-size:11px;color:var(--muted);}
+.pwa-banner-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.pwa-install-btn{
+  background:var(--mint);color:#0B0F1A;border:none;
+  border-radius:9px;padding:7px 14px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  font-family:'Poppins',sans-serif;
+  transition:var(--transition);white-space:nowrap;
+}
+.pwa-install-btn:hover{transform:scale(1.03);}
+.pwa-dismiss-btn{
+  background:transparent;border:none;
+  font-size:11px;color:var(--muted);cursor:pointer;
+  text-align:center;padding:2px;
+}
+.pwa-dismiss-btn:hover{color:var(--text);}
+
+/* Offline indicator */
+#offline-badge{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:rgba(255,59,59,0.15);border:1px solid rgba(255,59,59,0.3);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:600;color:#FF7070;
+  display:none;align-items:center;gap:6px;z-index:200;
+  animation:fadeIn .3s ease;
+}
+#offline-badge.show{display:flex;}
+#offline-badge::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:#FF7070;flex-shrink:0;
+}
+
+/* PWA settings card */
+.pwa-status-card{
+  margin:0 18px 8px;background:var(--card2);
+  border-radius:14px;padding:16px;
+  border:1px solid rgba(0,245,160,0.15);
+}
+.pwa-status-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.pwa-status-icon{
+  width:40px;height:40px;border-radius:11px;
+  background:linear-gradient(135deg,rgba(0,245,160,0.15),rgba(91,140,255,0.1));
+  border:1px solid rgba(0,245,160,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.pwa-status-info{flex:1;}
+.pwa-status-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;}
+.pwa-status-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.pwa-checklist{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+.pwa-check-row{display:flex;align-items:center;gap:8px;font-size:12px;}
+.pwa-check-icon{font-size:13px;flex-shrink:0;width:18px;text-align:center;}
+.pwa-check-label{color:var(--muted);}
+.pwa-check-label.done{color:var(--text);}
+
+
+/* ============================================
+   HABIT TRACKER SCREEN
+   ============================================ */
+#habits-screen{padding:0;}
+
+/* Streak hero banner */
+.streak-hero{
+  margin:0 18px 16px;
+  background:var(--card);border-radius:var(--r);
+  border:1px solid rgba(255,181,71,0.2);
+  padding:20px 18px;
+  position:relative;overflow:hidden;
+}
+.streak-hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 80% 50%, rgba(255,181,71,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.streak-fire-row{display:flex;align-items:center;gap:14px;}
+.streak-fire-icon{
+  font-size:44px;line-height:1;
+  animation:fireWobble 1.8s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes fireWobble{0%,100%{transform:scale(1) rotate(-2deg);}50%{transform:scale(1.08) rotate(2deg);}}
+.streak-nums{flex:1;}
+.streak-count{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:52px;font-weight:700;
+  color:var(--yellow);line-height:1;
+  text-shadow:0 0 30px rgba(255,181,71,0.4);
+}
+.streak-count.dead{color:var(--muted);text-shadow:none;}
+.streak-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.streak-best{
+  font-size:11px;color:var(--yellow);font-weight:600;
+  margin-top:6px;display:flex;align-items:center;gap:4px;
+}
+.streak-actions{display:flex;gap:10px;margin-top:14px;}
+.streak-action-btn{
+  flex:1;padding:10px;border-radius:12px;border:none;
+  font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;
+  cursor:pointer;transition:var(--transition);
+}
+.streak-action-btn.primary{background:var(--yellow);color:#1a1000;}
+.streak-action-btn.primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,181,71,0.3);}
+.streak-action-btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+.streak-action-btn.ghost:hover{border-color:rgba(255,181,71,0.25);}
+
+/* Today's habits */
+.habits-today-section{padding:0 18px;margin-bottom:16px;}
+.habits-section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.habits-section-title{
+  font-family:'Poppins',sans-serif;font-size:13px;
+  font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;
+}
+.habits-completion-badge{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:12px;font-weight:700;color:var(--mint);
+}
+
+.habit-item{
+  background:var(--card2);border-radius:14px;
+  padding:14px 16px;margin-bottom:9px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+  transition:var(--transition);
+  cursor:pointer;
+}
+.habit-item:hover{border-color:rgba(255,255,255,0.1);}
+.habit-item.completed{
+  border-color:rgba(0,245,160,0.2);
+  background:rgba(0,245,160,0.03);
+}
+.habit-check{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid var(--muted);
+  flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;
+  transition:var(--transition);font-size:13px;
+}
+.habit-check.done{
+  background:var(--mint);border-color:var(--mint);
+  box-shadow:0 0 12px rgba(0,245,160,0.4);
+}
+.habit-check.done::after{content:'✓';color:#0B0F1A;font-weight:700;font-size:13px;}
+.habit-emoji{font-size:20px;flex-shrink:0;}
+.habit-info{flex:1;min-width:0;}
+.habit-name{
+  font-size:14px;font-weight:500;margin-bottom:2px;
+  transition:var(--transition);
+}
+.habit-item.completed .habit-name{color:var(--muted);text-decoration:line-through;}
+.habit-meta{font-size:11px;color:var(--muted);}
+.habit-streak-pill{
+  display:flex;align-items:center;gap:3px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:11px;font-weight:700;
+  padding:4px 8px;border-radius:8px;
+  flex-shrink:0;
+}
+.habit-streak-pill.hot{background:rgba(255,181,71,0.12);color:var(--yellow);}
+.habit-streak-pill.cold{background:rgba(255,255,255,0.06);color:var(--muted);}
+
+/* Heatmap */
+.heatmap-section{padding:0 18px;margin-bottom:16px;}
+.heatmap-wrap{
+  background:var(--card);border-radius:var(--r);
+  border:1px solid var(--border);padding:16px 14px;
+}
+.heatmap-title-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.heatmap-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;}
+.heatmap-year-label{font-size:11px;color:var(--muted);}
+.heatmap-grid{
+  display:grid;
+  grid-template-columns:repeat(18,1fr);
+  gap:3px;margin-bottom:8px;
+}
+.hm-cell{
+  aspect-ratio:1;border-radius:3px;
+  background:rgba(255,255,255,0.05);
+  cursor:pointer;transition:transform .15s,box-shadow .15s;
+  position:relative;
+}
+.hm-cell:hover{transform:scale(1.3);z-index:2;}
+.hm-cell.lv1{background:rgba(0,245,160,0.15);}
+.hm-cell.lv2{background:rgba(0,245,160,0.35);}
+.hm-cell.lv3{background:rgba(0,245,160,0.6);}
+.hm-cell.lv4{background:rgba(0,245,160,0.85);box-shadow:0 0 6px rgba(0,245,160,0.4);}
+.hm-cell.today-cell{box-shadow:0 0 0 1.5px var(--mint);}
+.heatmap-legend{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);}
+.hm-legend-cell{width:10px;height:10px;border-radius:2px;}
+.heatmap-months{
+  display:flex;gap:0;font-size:9px;
+  color:var(--muted);margin-bottom:4px;
+  overflow:hidden;
+}
+
+/* Add habit modal */
+#add-habit-modal{
+  display:none;position:absolute;inset:0;
+  background:rgba(11,15,26,0.92);z-index:300;
+  align-items:flex-end;justify-content:center;
+}
+#add-habit-modal.open{display:flex;animation:slideUp .3s ease;}
+.add-habit-panel{
+  background:var(--card);border-radius:24px 24px 0 0;
+  padding:22px 20px 32px;width:100%;
+  border:1px solid var(--border2);
+  max-height:85vh;overflow-y:auto;
+}
+.add-habit-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px;}
+
+/* Emoji picker */
+.emoji-grid{
+  display:grid;grid-template-columns:repeat(8,1fr);
+  gap:6px;margin-bottom:14px;
+}
+.emoji-btn{
+  aspect-ratio:1;border-radius:10px;
+  background:var(--card2);border:1.5px solid var(--border);
+  font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--transition);
+}
+.emoji-btn:hover{border-color:rgba(0,245,160,0.3);}
+.emoji-btn.selected{border-color:var(--mint);background:rgba(0,245,160,0.1);}
+
+/* Habit manage section */
+.manage-habits-section{padding:0 18px;margin-bottom:16px;}
+.habit-manage-row{
+  background:var(--card2);border-radius:12px;
+  padding:12px 14px;margin-bottom:8px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.habit-manage-emoji{font-size:18px;flex-shrink:0;}
+.habit-manage-info{flex:1;}
+.habit-manage-name{font-size:13px;font-weight:500;}
+.habit-manage-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.habit-delete-btn{
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(255,59,59,0.1);border:none;
+  color:#FF7070;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--transition);
+}
+.habit-delete-btn:hover{background:rgba(255,59,59,0.2);}
+
+/* Completion animation */
+@keyframes habitPop{
+  0%{transform:scale(1);}
+  40%{transform:scale(1.18);}
+  70%{transform:scale(0.95);}
+  100%{transform:scale(1);}
+}
+.habit-pop{animation:habitPop .4s cubic-bezier(0.34,1.56,0.64,1);}
+
+/* Confetti burst (CSS only) */
+@keyframes confettiFloat{
+  0%{opacity:1;transform:translateY(0) rotate(0deg) scale(1);}
+  100%{opacity:0;transform:translateY(-60px) rotate(360deg) scale(0);}
+}
+
+/* Home streak widget */
+.home-streak-widget{
+  margin:0 18px 16px;
+  background:var(--card2);border-radius:14px;
+  border:1px solid rgba(255,181,71,0.15);
+  padding:14px 16px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:var(--transition);
+}
+.home-streak-widget:hover{border-color:rgba(255,181,71,0.3);}
+.home-streak-fire{font-size:28px;flex-shrink:0;animation:fireWobble 2s ease-in-out infinite;}
+.home-streak-info{flex:1;}
+.home-streak-num{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--yellow);}
+.home-streak-label{font-size:11px;color:var(--muted);margin-top:1px;}
+.home-habits-mini{display:flex;gap:6px;margin-top:8px;}
+.home-habit-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;border:1.5px solid var(--border);
+  background:var(--card);transition:var(--transition);
+}
+.home-habit-dot.done{
+  border-color:rgba(0,245,160,0.4);
+  background:rgba(0,245,160,0.08);
+}
+.home-habit-more{font-size:11px;color:var(--muted);align-self:center;margin-left:2px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- War mode overlay -->
+  <div id="war-overlay"></div>
+
+  <!-- Offline indicator -->
+  <div id="offline-badge">No Internet — Offline Mode</div>
+
+  <!-- PWA Install Banner -->
+  <div id="pwa-install-banner">
+    <div class="pwa-banner-icon">⚔️</div>
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Install War Room</div>
+      <div class="pwa-banner-sub">Phone वर add करा — offline चालेल</div>
+    </div>
+    <div class="pwa-banner-btns">
+      <button class="pwa-install-btn" onclick="triggerInstall()">Install</button>
+      <button class="pwa-dismiss-btn" onclick="dismissInstallBanner()">Later</button>
+    </div>
+  </div>
+
+  <!-- SCREEN AREA -->
+  <div id="screen-area">
+
+    <!-- ══════════════════════════════════════
+         HOME
+    ══════════════════════════════════════ -->
+    <div id="home-screen" class="screen active">
+      <!-- Hero Countdown -->
+      <div class="home-hero">
+        <div class="hero-bg"></div>
+        <div class="hero-chip">GATE CS 2027 · War Room</div>
+        <div class="countdown-num num" id="countdown-days">—</div>
+        <div class="countdown-label">days until <strong>6 February 2027</strong></div>
+        <div class="exam-quote" id="home-quote">"Discipline Today = AIR Tomorrow"</div>
+        <div class="year-track">
+          <div class="year-fill" id="year-fill" style="width:0%"></div>
+        </div>
+        <div class="year-labels">
+          <span>Mar 2026</span>
+          <span id="year-pct-label">0%</span>
+          <span>6 Feb 2027</span>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-mini" onclick="switchTab('stats')">
+          <div class="stat-mini-val num" style="color:var(--mint);" id="home-hrs">0h</div>
+          <div class="stat-mini-lbl">Today</div>
+        </div>
+        <div class="stat-mini" onclick="switchTab('stats')">
+          <div class="stat-mini-val num" style="color:var(--blue);" id="home-weekly">0%</div>
+          <div class="stat-mini-lbl">Weekly</div>
+        </div>
+        <div class="stat-mini" onclick="switchTab('stats')">
+          <div class="stat-mini-val num" style="color:var(--yellow);" id="home-syllabus">0%</div>
+          <div class="stat-mini-lbl">Syllabus</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="qa-section">
+        <div class="qa-section-title">Quick Actions</div>
+        <div class="qa-grid">
+          <button class="qa-card" onclick="openTimerModal()">
+            <span class="qa-card-icon">⏱</span>
+            <span class="qa-card-text">Focus Timer</span>
+          </button>
+          <button class="qa-card" onclick="switchTab('planner')">
+            <span class="qa-card-icon">📋</span>
+            <span class="qa-card-text">Open Planner</span>
+          </button>
+          <button class="qa-card" onclick="switchTab('diary')">
+            <span class="qa-card-icon">📔</span>
+            <span class="qa-card-text">Daily Diary</span>
+          </button>
+          <button class="qa-card" onclick="switchTab('stats');setTimeout(()=>setStatTab('mocks'),200)">
+            <span class="qa-card-icon">📈</span>
+            <span class="qa-card-text">Mock Analyzer</span>
+          </button>
+          <button class="qa-card" onclick="switchTab('pyq')">
+            <span class="qa-card-icon">📚</span>
+            <span class="qa-card-text">PYQ Center</span>
+          </button>
+          <button class="qa-card" onclick="switchTab('mistakes')">
+            <span class="qa-card-icon">❌</span>
+            <span class="qa-card-text">Mistake Book</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Today's Battle Plan -->
+      <div class="today-plan" id="home-today-plan">
+        <div class="today-plan-head">
+          <div class="live-dot"></div>
+          <span class="today-plan-title">Today's Battle Plan</span>
+          <span class="today-plan-date" id="home-today-date"></span>
+        </div>
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Home Streak Widget -->
+      <div class="home-streak-widget" onclick="switchTab('habits')" id="home-streak-widget">
+        <div class="home-streak-fire">🔥</div>
+        <div class="home-streak-info">
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <div class="home-streak-num" id="home-streak-num">—</div>
+            <div class="home-streak-label">day streak</div>
+          </div>
+          <div class="home-habits-mini" id="home-habits-mini"></div>
+        </div>
+        <div style="font-size:18px;color:var(--muted);">›</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         HABITS
+    ══════════════════════════════════════ -->
+    <div id="habits-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Habit Tracker</div>
+        <div class="screen-sub">Build the warrior's daily discipline</div>
+      </div>
+
+      <!-- Streak Hero -->
+      <div class="streak-hero">
+        <div class="streak-hero-bg"></div>
+        <div class="streak-fire-row">
+          <div class="streak-fire-icon" id="streak-fire-icon">🔥</div>
+          <div class="streak-nums">
+            <div class="streak-count num" id="streak-main-count">0</div>
+            <div class="streak-sub" id="streak-sub-text">day streak · Keep going!</div>
+            <div class="streak-best" id="streak-best-row">🏆 Best: 0 days</div>
+          </div>
+        </div>
+        <div class="streak-actions">
+          <button class="streak-action-btn primary" onclick="openAddHabitModal()">+ New Habit</button>
+          <button class="streak-action-btn ghost" onclick="toggleManageHabits()">⚙ Manage</button>
+        </div>
+      </div>
+
+      <!-- Today's Habits -->
+      <div class="habits-today-section">
+        <div class="habits-section-head">
+          <div class="habits-section-title">Today's Habits</div>
+          <div class="habits-completion-badge" id="habits-completion-count">0 / 0</div>
+        </div>
+        <div id="habits-today-list"></div>
+      </div>
+
+      <!-- GitHub-style Heatmap -->
+      <div class="heatmap-section">
+        <div class="heatmap-wrap">
+          <div class="heatmap-title-row">
+            <div class="heatmap-title">Activity Heatmap</div>
+            <div class="heatmap-year-label">Last 18 weeks</div>
+          </div>
+          <div class="heatmap-months" id="heatmap-months"></div>
+          <div class="heatmap-grid" id="heatmap-grid"></div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="hm-legend-cell" style="background:rgba(255,255,255,0.05);"></div>
+            <div class="hm-legend-cell lv1"></div>
+            <div class="hm-legend-cell lv2"></div>
+            <div class="hm-legend-cell lv3"></div>
+            <div class="hm-legend-cell lv4"></div>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manage Habits (hidden) -->
+      <div class="manage-habits-section" id="manage-habits-section" style="display:none;">
+        <div class="habits-section-title" style="margin-bottom:10px;">Manage Habits</div>
+        <div id="manage-habits-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PLANNER
+    ══════════════════════════════════════ -->
+    <div id="planner-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">War Planner</div>
+        <div class="screen-sub">Strategic execution · Phase by phase</div>
+      </div>
+      <div class="planner-pad">
+        <div class="tab-bar" id="planner-tabs">
+          <div class="tab-pill active" onclick="setPlannerTab(this,'phase1')">Phase I</div>
+          <div class="tab-pill" onclick="setPlannerTab(this,'phase2')">Phase II</div>
+          <div class="tab-pill" onclick="setPlannerTab(this,'phase3')">Phase III</div>
+          <div class="tab-pill" onclick="setPlannerTab(this,'daily')">Daily</div>
+        </div>
+
+        <!-- Add task button -->
+        <button class="btn-ghost" style="width:100%;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="toggleAddTask()">
+          <span style="font-size:16px;">+</span> Add Task
+        </button>
+
+        <!-- Add task panel -->
+        <div class="add-task-panel" id="add-task-panel">
+          <div class="add-task-title">New Task</div>
+          <div class="form-row">
+            <label class="form-label">Task Title</label>
+            <input class="input-field" id="new-task-title" placeholder="e.g. Binary Trees – Level Order" />
+          </div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Subject</label>
+              <select class="input-field" id="new-task-subject">
+                <option>Data Structures</option>
+                <option>Algorithms</option>
+                <option>Operating Systems</option>
+                <option>DBMS</option>
+                <option>Computer Networks</option>
+                <option>TOC</option>
+                <option>COA</option>
+                <option>Compiler Design</option>
+                <option>Engg. Mathematics</option>
+                <option>C Programming</option>
+                <option>General Aptitude</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Priority</label>
+              <select class="input-field" id="new-task-priority">
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Est. Time (hrs)</label>
+              <input class="input-field" id="new-task-time" type="number" min="0.5" step="0.5" placeholder="2" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Phase</label>
+              <select class="input-field" id="new-task-phase">
+                <option value="phase1">Phase I</option>
+                <option value="phase2">Phase II</option>
+                <option value="phase3">Phase III</option>
+                <option value="daily">Daily</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="saveNewTask()">Save Task</button>
+        </div>
+
+        <!-- Phase Panels -->
+        <div id="planner-phase1" class="planner-phase-panel"></div>
+        <div id="planner-phase2" class="planner-phase-panel" style="display:none"></div>
+        <div id="planner-phase3" class="planner-phase-panel" style="display:none"></div>
+        <div id="planner-daily" class="planner-phase-panel" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         DIARY
+    ══════════════════════════════════════ -->
+    <div id="diary-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Daily Diary</div>
+        <div class="screen-sub">Log every battle · Build the streak</div>
+      </div>
+      <div style="padding:0 18px;">
+        <!-- New Entry Form -->
+        <div class="card mint-accent section-gap">
+          <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+            <span>📝</span> New Entry
+          </div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Date</label>
+              <input class="input-field" type="date" id="diary-date" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Subject</label>
+              <select class="input-field" id="diary-subject">
+                <option>Data Structures</option>
+                <option>Algorithms</option>
+                <option>Operating Systems</option>
+                <option>DBMS</option>
+                <option>Computer Networks</option>
+                <option>TOC</option>
+                <option>COA</option>
+                <option>Compiler Design</option>
+                <option>Engg. Mathematics</option>
+                <option>C Programming</option>
+                <option>General Aptitude</option>
+                <option>Mixed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Topic Covered</label>
+            <input class="input-field" id="diary-topic" placeholder="e.g. Level Order Traversal, Page Replacement" />
+          </div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Hours Studied</label>
+              <input class="input-field" type="number" id="diary-hours" min="0.5" step="0.5" placeholder="3" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Productivity (1–5)</label>
+              <select class="input-field" id="diary-rating">
+                <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                <option value="4">⭐⭐⭐⭐ 4</option>
+                <option value="3" selected>⭐⭐⭐ 3</option>
+                <option value="2">⭐⭐ 2</option>
+                <option value="1">⭐ 1</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Notes / Insights</label>
+            <textarea class="input-field" id="diary-notes" placeholder="Key takeaways, doubts, observations..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="saveDiaryEntry()">Save Entry</button>
+        </div>
+
+        <!-- Past Entries -->
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Past Entries</div>
+        <div id="diary-entries-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         STATS
+    ══════════════════════════════════════ -->
+    <div id="stats-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Battle Stats</div>
+        <div class="screen-sub">Know your strengths · Target your weak zones</div>
+      </div>
+      <div style="padding:0 18px;">
+        <div class="tab-bar">
+          <div class="tab-pill active" onclick="setStatTab('subjects',this)">Subjects</div>
+          <div class="tab-pill" onclick="setStatTab('mocks',this)">Mocks</div>
+          <div class="tab-pill" onclick="setStatTab('focus',this)">Focus</div>
+        </div>
+
+        <!-- Subjects panel -->
+        <div id="stat-subjects-panel">
+          <div class="stats-summary-row">
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--mint);" id="total-hrs-stat">0h</div>
+              <div class="stats-mini-lbl">Total Hours</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--blue);" id="streak-stat">0</div>
+              <div class="stats-mini-lbl">Day Streak</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--yellow);" id="avg-hrs-stat">0h</div>
+              <div class="stats-mini-lbl">Daily Avg</div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Subject Distribution</div>
+            <canvas id="donut-chart" height="200"></canvas>
+          </div>
+          <div id="subject-stats-list"></div>
+        </div>
+
+        <!-- Mocks panel -->
+        <div id="stat-mocks-panel" style="display:none">
+          <div class="stats-summary-row" style="margin-bottom:14px;">
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--mint);">0</div>
+              <div class="stats-mini-lbl">Mocks Done</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--blue);">—</div>
+              <div class="stats-mini-lbl">Avg Score</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--yellow);">—</div>
+              <div class="stats-mini-lbl">Best Acc.</div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Score Trend</div>
+            <canvas id="mock-trend-chart" height="160"></canvas>
+          </div>
+          <button class="btn-ghost" style="width:100%;margin-bottom:14px;" onclick="openAddMock()">+ Add Mock Result</button>
+          <!-- Add Mock Form -->
+          <div class="add-task-panel" id="add-mock-panel" style="margin-bottom:14px;">
+            <div class="add-task-title">Log Mock Result</div>
+            <div class="form-grid2">
+              <div class="form-row">
+                <label class="form-label">Mock #</label>
+                <input class="input-field" id="mock-num" placeholder="6" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">Score</label>
+                <input class="input-field" id="mock-score" type="number" placeholder="48.5" />
+              </div>
+            </div>
+            <div class="form-grid2">
+              <div class="form-row">
+                <label class="form-label">Accuracy %</label>
+                <input class="input-field" id="mock-acc" type="number" placeholder="68" />
+              </div>
+              <div class="form-row">
+                <label class="form-label">Date</label>
+                <input class="input-field" id="mock-date" type="date" />
+              </div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Notes / Weaknesses</label>
+              <textarea class="input-field" id="mock-notes" placeholder="TOC questions went wrong, need more revision..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="saveMock()">Save Mock</button>
+          </div>
+          <div id="mocks-list"></div>
+        </div>
+
+        <!-- Focus panel -->
+        <div id="stat-focus-panel" style="display:none">
+          <div class="stats-summary-row" style="margin-bottom:14px;">
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--mint);" id="total-focus-stat">0</div>
+              <div class="stats-mini-lbl">Focus Hrs</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--blue);" id="total-sessions-stat">0</div>
+              <div class="stats-mini-lbl">Sessions</div>
+            </div>
+            <div class="stats-mini-card">
+              <div class="stats-mini-val num" style="color:var(--yellow);" id="best-day-stat">0h</div>
+              <div class="stats-mini-lbl">Best Day</div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Weekly Focus Trend</div>
+            <canvas id="focus-chart" height="160"></canvas>
+          </div>
+          <div class="empty-state" style="padding:24px 0;">
+            <div class="empty-icon">⏱</div>
+            <div class="empty-msg">Start a focus session</div>
+            <div style="margin-top:8px;">
+              <button class="btn-primary" style="width:auto;padding:12px 24px;" onclick="openTimerModal()">Open Timer</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         VAULT
+    ══════════════════════════════════════ -->
+    <div id="vault-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Formula Vault</div>
+        <div class="screen-sub">Your personal knowledge arsenal</div>
+      </div>
+      <div style="padding:0 18px;">
+        <div class="vault-search">
+          <span style="font-size:16px;color:var(--muted);">🔍</span>
+          <input type="text" id="vault-search-input" placeholder="Search formulas, theorems, concepts..." oninput="filterVault(this.value)" />
+        </div>
+        <div id="vault-content"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MISTAKES
+    ══════════════════════════════════════ -->
+    <div id="mistakes-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Mistake Notebook</div>
+        <div class="screen-sub">Learn from every wrong answer</div>
+      </div>
+      <div style="padding:0 18px;">
+        <!-- Add Mistake -->
+        <button class="btn-ghost" style="width:100%;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="toggleMistakeForm()">
+          <span>+</span> Log Mistake
+        </button>
+        <div class="add-task-panel" id="add-mistake-panel">
+          <div class="add-task-title">Log Mistake</div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Mock / Source</label>
+              <input class="input-field" id="m-mock" placeholder="Mock 4" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Q. Number</label>
+              <input class="input-field" id="m-qnum" placeholder="Q15" />
+            </div>
+          </div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Subject</label>
+              <select class="input-field" id="m-subject">
+                <option>Data Structures</option><option>Algorithms</option>
+                <option>Operating Systems</option><option>DBMS</option>
+                <option>Computer Networks</option><option>TOC</option>
+                <option>COA</option><option>Compiler Design</option>
+                <option>Engg. Mathematics</option><option>C Programming</option>
+                <option>General Aptitude</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Mistake Type</label>
+              <select class="input-field" id="m-type">
+                <option value="conceptual">Conceptual</option>
+                <option value="silly">Silly</option>
+                <option value="time">Time Issue</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Topic</label>
+            <input class="input-field" id="m-topic" placeholder="e.g. Page Replacement – LRU" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Lesson Learned</label>
+            <textarea class="input-field" id="m-lesson" placeholder="What went wrong and how to avoid it..."></textarea>
+          </div>
+          <button class="btn-primary" onclick="saveMistake()">Save</button>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="pyq-filter-row" id="mistake-filter-row">
+          <div class="pyq-pill active" onclick="filterMistakes('all',this)">All</div>
+          <div class="pyq-pill" onclick="filterMistakes('conceptual',this)">Conceptual</div>
+          <div class="pyq-pill" onclick="filterMistakes('silly',this)">Silly</div>
+          <div class="pyq-pill" onclick="filterMistakes('time',this)">Time Issue</div>
+        </div>
+
+        <div id="mistakes-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PYQ
+    ══════════════════════════════════════ -->
+    <div id="pyq-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">PYQ Command</div>
+        <div class="screen-sub">Past Year Questions · 1991–2026</div>
+      </div>
+      <div style="padding:0 18px;">
+        <!-- Stats -->
+        <div class="pyq-stats-row" style="margin-bottom:14px;">
+          <div class="pyq-stat">
+            <div class="pyq-stat-val num" style="color:var(--mint);" id="pyq-total">0</div>
+            <div class="pyq-stat-lbl">Attempted</div>
+          </div>
+          <div class="pyq-stat">
+            <div class="pyq-stat-val num" style="color:var(--blue);" id="pyq-correct">0</div>
+            <div class="pyq-stat-lbl">Correct</div>
+          </div>
+          <div class="pyq-stat">
+            <div class="pyq-stat-val num" style="color:var(--yellow);" id="pyq-acc">—</div>
+            <div class="pyq-stat-lbl">Accuracy</div>
+          </div>
+        </div>
+        <!-- Subject filter -->
+        <div class="pyq-filter-row" id="pyq-subj-filter">
+          <div class="pyq-pill active" onclick="filterPYQ(this)">All</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">DS</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">OS</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">DBMS</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">CN</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">TOC</div>
+          <div class="pyq-pill" onclick="filterPYQ(this)">Algo</div>
+        </div>
+        <!-- Add PYQ -->
+        <button class="btn-ghost" style="width:100%;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="togglePYQForm()">
+          <span>+</span> Add PYQ Entry
+        </button>
+        <div class="add-task-panel" id="add-pyq-panel">
+          <div class="add-task-title">Add PYQ</div>
+          <div class="form-grid2">
+            <div class="form-row">
+              <label class="form-label">Year</label>
+              <input class="input-field" id="pyq-year" placeholder="2023" type="number" min="1991" max="2026" />
+            </div>
+            <div class="form-row">
+              <label class="form-label">Subject</label>
+              <select class="input-field" id="pyq-subject">
+                <option>DS</option><option>Algorithms</option>
+                <option>OS</option><option>DBMS</option>
+                <option>CN</option><option>TOC</option>
+                <option>COA</option><option>Compiler Design</option>
+                <option>Engg. Maths</option><option>C Programming</option>
+                <option>General Aptitude</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Question Summary</label>
+            <textarea class="input-field" id="pyq-question" placeholder="Brief description of the question..."></textarea>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Status</label>
+            <select class="input-field" id="pyq-status">
+              <option value="correct">Correct ✓</option>
+              <option value="wrong">Wrong ✗</option>
+              <option value="unattempted">Unattempted</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="savePYQ()">Save</button>
+        </div>
+        <div id="pyq-list"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SETTINGS
+    ══════════════════════════════════════ -->
+    <div id="settings-screen" class="screen">
+      <div class="screen-header">
+        <div class="screen-title">Settings</div>
+        <div class="screen-sub">Configure your war room</div>
+      </div>
+
+      <!-- Profile -->
+      <div class="settings-section">
+        <div class="settings-section-title">Profile</div>
+        <div class="settings-item" style="align-items:flex-start;gap:14px;">
+          <div class="profile-avatar">R</div>
+          <div>
+            <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;">Rohan D Dawange</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">GATE CS 2027 Aspirant</div>
+            <div style="font-size:11px;color:var(--mint);margin-top:4px;font-weight:600;">Maharashtra, India</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exam Config -->
+      <div class="settings-section">
+        <div class="settings-section-title">Exam Configuration</div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(0,245,160,0.1);">📅</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Exam Date</div>
+              <div class="settings-item-sub">6 February 2027</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(91,140,255,0.1);">🎯</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Daily Target</div>
+              <div class="settings-item-sub" id="daily-target-label">8 hours / day</div>
+            </div>
+          </div>
+          <input type="number" class="input-field" id="daily-target-input" style="width:70px;text-align:center;" value="8" min="1" max="16" onchange="saveDailyTarget(this.value)" />
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="settings-section">
+        <div class="settings-section-title">Features</div>
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(255,59,59,0.1);">🔴</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">War Mode</div>
+              <div class="settings-item-sub">Auto-activates at 100 days</div>
+            </div>
+          </div>
+          <div class="toggle-sw" id="war-mode-toggle" onclick="this.classList.toggle('on');applyWarMode()"></div>
+        </div>
+        <div class="settings-item" style="cursor:pointer;" onclick="toggleReminderDetail()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(255,181,71,0.1);">🔔</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Study Reminders</div>
+              <div class="settings-item-sub" id="reminder-status-sub">Tap to configure</div>
+            </div>
+          </div>
+          <div class="toggle-sw" id="reminder-master-toggle" onclick="event.stopPropagation();toggleMasterReminder(this)"></div>
+        </div>
+        <!-- Reminder Detail Card -->
+        <div class="reminder-detail-card" id="reminder-detail-card">
+          <div style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--mint);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;">Reminder Schedule</div>
+
+          <div class="reminder-time-row">
+            <div>
+              <div class="reminder-time-label">🌅 Morning Wake-Up</div>
+              <div class="reminder-time-sub">Start your study session</div>
+            </div>
+            <input type="time" class="reminder-time-input" id="rem-morning" value="06:00" onchange="saveReminderTimes()">
+          </div>
+          <div class="reminder-time-row">
+            <div>
+              <div class="reminder-time-label">📚 Study Block 1</div>
+              <div class="reminder-time-sub">First focus session</div>
+            </div>
+            <input type="time" class="reminder-time-input" id="rem-block1" value="09:00" onchange="saveReminderTimes()">
+          </div>
+          <div class="reminder-time-row">
+            <div>
+              <div class="reminder-time-label">⚔️ Afternoon Grind</div>
+              <div class="reminder-time-sub">Second focus session</div>
+            </div>
+            <input type="time" class="reminder-time-input" id="rem-block2" value="14:00" onchange="saveReminderTimes()">
+          </div>
+          <div class="reminder-time-row">
+            <div>
+              <div class="reminder-time-label">🌙 Evening Revision</div>
+              <div class="reminder-time-sub">Revise today's topics</div>
+            </div>
+            <input type="time" class="reminder-time-input" id="rem-evening" value="19:00" onchange="saveReminderTimes()">
+          </div>
+          <div class="reminder-time-row">
+            <div>
+              <div class="reminder-time-label">🛌 Daily Log Reminder</div>
+              <div class="reminder-time-sub">Log diary + tomorrow plan</div>
+            </div>
+            <input type="time" class="reminder-time-input" id="rem-night" value="22:00" onchange="saveReminderTimes()">
+          </div>
+
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+            <div style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;">Smart Alerts</div>
+            <div class="reminder-time-row">
+              <div><div class="reminder-time-label">📊 Mock Due Alert</div><div class="reminder-time-sub">If no mock in 5+ days</div></div>
+              <div class="toggle-sw on" id="rem-mock-toggle" onclick="this.classList.toggle('on');saveReminderTimes()"></div>
+            </div>
+            <div class="reminder-time-row">
+              <div><div class="reminder-time-label">⚠️ Weak Subject Alert</div><div class="reminder-time-sub">Study weak subject today</div></div>
+              <div class="toggle-sw on" id="rem-weak-toggle" onclick="this.classList.toggle('on');saveReminderTimes()"></div>
+            </div>
+            <div class="reminder-time-row">
+              <div><div class="reminder-time-label">🔥 Streak Guard</div><div class="reminder-time-sub">Alert before streak breaks</div></div>
+              <div class="toggle-sw on" id="rem-streak-toggle" onclick="this.classList.toggle('on');saveReminderTimes()"></div>
+            </div>
+            <div class="reminder-time-row" style="border-bottom:none;">
+              <div><div class="reminder-time-label">⏱ Focus Session Nudge</div><div class="reminder-time-sub">No session started by 10am</div></div>
+              <div class="toggle-sw on" id="rem-focus-toggle" onclick="this.classList.toggle('on');saveReminderTimes()"></div>
+            </div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:14px;" onclick="requestNotifPermission()">🔔 Enable Browser Notifications</button>
+          <div id="notif-perm-status" style="text-align:center;font-size:11px;color:var(--muted);margin-top:8px;"></div>
+        </div>
+
+      <!-- PWA -->
+      <div class="settings-section">
+        <div class="settings-section-title">App Installation</div>
+        <div class="pwa-status-card">
+          <div class="pwa-status-row">
+            <div class="pwa-status-icon">📱</div>
+            <div class="pwa-status-info">
+              <div class="pwa-status-title">Install on Phone</div>
+              <div class="pwa-status-sub" id="pwa-install-status-text">Checking status…</div>
+            </div>
+          </div>
+          <div class="pwa-checklist">
+            <div class="pwa-check-row">
+              <div class="pwa-check-icon" id="pwa-chk-sw">⏳</div>
+              <div class="pwa-check-label" id="pwa-lbl-sw">Service Worker registering…</div>
+            </div>
+            <div class="pwa-check-row">
+              <div class="pwa-check-icon" id="pwa-chk-manifest">⏳</div>
+              <div class="pwa-check-label" id="pwa-lbl-manifest">Manifest loading…</div>
+            </div>
+            <div class="pwa-check-row">
+              <div class="pwa-check-icon" id="pwa-chk-https">⏳</div>
+              <div class="pwa-check-label" id="pwa-lbl-https">Checking connection…</div>
+            </div>
+            <div class="pwa-check-row">
+              <div class="pwa-check-icon" id="pwa-chk-offline">⏳</div>
+              <div class="pwa-check-label" id="pwa-lbl-offline">Offline cache…</div>
+            </div>
+          </div>
+          <button class="btn-primary" id="pwa-install-btn" onclick="triggerInstall()" style="display:none;">
+            📲 Install War Room App
+          </button>
+          <div id="pwa-installed-msg" style="display:none;text-align:center;padding:10px;font-size:12px;color:var(--mint);font-weight:600;">
+            ✅ War Room is installed on your device!
+          </div>
+          <div id="pwa-manual-msg" style="display:none;padding:10px;font-size:12px;color:var(--muted);line-height:1.6;background:rgba(255,255,255,0.03);border-radius:10px;margin-top:4px;">
+          </div>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(91,140,255,0.1);">☁️</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Firebase Sync</div>
+              <div class="settings-item-sub">Cloud backup — coming soon</div>
+            </div>
+          </div>
+          <div class="toggle-sw" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="settings-section">
+        <div class="settings-section-title">Data Management</div>
+        <div class="settings-item" style="cursor:pointer;" onclick="exportData()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(0,245,160,0.1);">📤</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Export All Data</div>
+              <div class="settings-item-sub">Download JSON backup</div>
+            </div>
+          </div>
+          <span style="color:var(--muted);font-size:18px;">›</span>
+        </div>
+        <div class="settings-item" style="cursor:pointer;" onclick="clearAllData()">
+          <div class="settings-item-left">
+            <div class="settings-icon" style="background:rgba(255,59,59,0.1);">🗑️</div>
+            <div class="settings-text-wrap">
+              <div class="settings-item-title">Reset All Data</div>
+              <div class="settings-item-sub">Clears localStorage</div>
+            </div>
+          </div>
+          <span style="color:var(--red);font-size:18px;">›</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px 18px 30px;font-size:11px;color:var(--muted);line-height:1.7;">
+        <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">GATE 2027 – War Room</div>
+        Made by Rohan D Dawange<br>
+        v1.3 · PWA · Habits · Notifications
+      </div>
+    </div>
+
+  </div><!-- /screen-area -->
+
+  <!-- BOTTOM NAV -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+      <span class="nav-icon">⌂</span><span class="nav-label">Home</span>
+    </button>
+    <button class="nav-btn" id="nav-planner" onclick="switchTab('planner')">
+      <span class="nav-icon">📋</span><span class="nav-label">Planner</span>
+    </button>
+    <button class="nav-btn" id="nav-habits" onclick="switchTab('habits')">
+      <span class="nav-icon">🔥</span><span class="nav-label">Habits</span>
+    </button>
+    <button class="nav-btn" id="nav-stats" onclick="switchTab('stats')">
+      <span class="nav-icon">📊</span><span class="nav-label">Stats</span>
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
+      <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- FAB -->
+  <button id="fab" onclick="openQuickAdd()">+</button>
+
+  <!-- TIMER MODAL -->
+  <div id="timer-modal">
+    <button class="timer-close-btn" onclick="closeTimerModal()">✕</button>
+    <div class="timer-mode-label">Focus Timer</div>
+    <div class="timer-mode-tabs">
+      <div class="timer-mode-btn active" onclick="setTimerMode(this,25,5)">25 / 5</div>
+      <div class="timer-mode-btn" onclick="setTimerMode(this,50,10)">50 / 10</div>
+      <div class="timer-mode-btn" id="war-timer-btn" onclick="setTimerMode(this,90,15)">90 / 15 ⚔️</div>
+    </div>
+    <div class="timer-ring-wrap">
+      <svg id="timer-ring-svg" viewBox="0 0 220 220">
+        <circle cx="110" cy="110" r="96" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
+        <circle id="timer-arc" cx="110" cy="110" r="96" fill="none"
+          stroke="var(--mint)" stroke-width="8" stroke-linecap="round"
+          stroke-dasharray="603.19" stroke-dashoffset="0"
+          transform="rotate(-90 110 110)"
+          style="transition:stroke-dashoffset .5s ease,stroke .5s ease;
+                 filter:drop-shadow(0 0 8px rgba(0,245,160,.5));"/>
+      </svg>
+      <div class="timer-center">
+        <div class="timer-clock num" id="timer-display">25:00</div>
+        <div class="timer-phase-label" id="timer-phase-lbl">Focus</div>
+      </div>
+    </div>
+    <div class="timer-motivate" id="timer-motivate">"A warrior is judged not by victories, but by how hard they trained."</div>
+    <div class="timer-btns">
+      <button class="timer-btn-main start" id="timer-start-btn" onclick="toggleTimer()">START</button>
+      <button class="timer-btn-reset" onclick="resetTimer()">RESET</button>
+    </div>
+    <div class="timer-session-info">
+      <div class="timer-session-stat">
+        <span class="timer-session-val num" id="timer-total-today">0h 0m</span>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Today</span>
+      </div>
+      <div class="timer-session-stat">
+        <span class="timer-session-val num" id="timer-sessions-today">0</span>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Sessions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ADD MODAL -->
+  <div id="quick-add-modal" onclick="if(event.target===this)closeQuickAdd()">
+    <div class="quick-add-panel">
+      <div class="quick-add-title">Quick Add</div>
+      <div class="quick-add-options">
+        <button class="quick-opt" onclick="closeQuickAdd();switchTab('planner');setTimeout(toggleAddTask,300)">
+          <span class="quick-opt-icon">📋</span>
+          <span class="quick-opt-label">Task</span>
+        </button>
+        <button class="quick-opt" onclick="closeQuickAdd();switchTab('diary')">
+          <span class="quick-opt-icon">📔</span>
+          <span class="quick-opt-label">Diary Entry</span>
+        </button>
+        <button class="quick-opt" onclick="closeQuickAdd();switchTab('mistakes');setTimeout(toggleMistakeForm,300)">
+          <span class="quick-opt-icon">❌</span>
+          <span class="quick-opt-label">Mistake</span>
+        </button>
+        <button class="quick-opt" onclick="closeQuickAdd();openTimerModal()">
+          <span class="quick-opt-icon">⏱</span>
+          <span class="quick-opt-label">Timer</span>
+        </button>
+      </div>
+      <button class="btn-ghost" style="width:100%;" onclick="closeQuickAdd()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- ADD HABIT MODAL -->
+  <div id="add-habit-modal" onclick="if(event.target===this)closeAddHabitModal()">
+    <div class="add-habit-panel">
+      <div class="add-habit-title">New Habit</div>
+
+      <div class="form-row">
+        <label class="form-label">Habit Name</label>
+        <input class="input-field" id="new-habit-name" placeholder="e.g. Morning revision, No phone before study..." />
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Choose Emoji</label>
+        <div class="emoji-grid" id="emoji-grid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Category</label>
+        <select class="input-field" id="new-habit-category">
+          <option value="study">📚 Study</option>
+          <option value="health">💪 Health</option>
+          <option value="discipline">⚔️ Discipline</option>
+          <option value="mindset">🧠 Mindset</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Target (days/week)</label>
+        <select class="input-field" id="new-habit-target">
+          <option value="7">Every day</option>
+          <option value="6">6 days/week</option>
+          <option value="5">5 days/week</option>
+          <option value="3">3 days/week</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" style="margin-top:4px;" onclick="saveNewHabit()">Add Habit</button>
+      <button class="btn-ghost" style="width:100%;margin-top:10px;" onclick="closeAddHabitModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION BELL -->
+  <div id="notif-bell-wrap">
+    <div id="notif-bell" onclick="openNotifPanel()">
+      🔔
+      <div id="notif-badge">0</div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION CENTER PANEL -->
+  <div id="notif-panel">
+    <div class="notif-panel-head">
+      <div class="notif-panel-back" onclick="closeNotifPanel()">←</div>
+      <div class="notif-panel-title">Notifications</div>
+      <div class="notif-clear-btn" onclick="clearAllNotifs()">Clear All</div>
+    </div>
+    <div class="notif-list" id="notif-list-inner"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ─────────────────────────────────────────────
+// DATA STORE (localStorage)
+// ─────────────────────────────────────────────
+const DB = {
+  get(k){ try{return JSON.parse(localStorage.getItem('wr_'+k))||[];}catch{return [];} },
+  set(k,v){ localStorage.setItem('wr_'+k,JSON.stringify(v)); },
+  getObj(k,def={}){ try{return JSON.parse(localStorage.getItem('wr_'+k))||def;}catch{return def;} },
+  setObj(k,v){ localStorage.setItem('wr_'+k,JSON.stringify(v)); }
+};
+
+// ─────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────
+const EXAM_DATE = new Date('2027-02-06T07:00:00');
+const SUBJECT_COLORS = {
+  'Data Structures':'#5B8CFF','Algorithms':'#4ADECD','Operating Systems':'#00F5A0',
+  'DBMS':'#FFB547','Computer Networks':'#C97FFF','TOC':'#FF6B6B','COA':'#FF9F4A',
+  'Compiler Design':'#F472B6','Engg. Mathematics':'#34D399','C Programming':'#60A5FA',
+  'General Aptitude':'#FBBF24','Mixed':'#8B949E'
+};
+const QUOTES = [
+  '"Discipline Today = AIR Tomorrow"',
+  '"The grind is the goal."',
+  '"While others sleep, warriors sharpen their blades."',
+  '"Pain now. AIR later. No excuses."',
+  '"Every mock is a battle. Win each one."',
+  '"GATE 2027 is not a dream — it\'s a mission."',
+  '"Focus is a weapon. Use it daily."',
+  '"The aspirant who outworks everyone — wins."'
+];
+const MOTIVATIONS = [
+  '"A warrior is judged not by victories, but by how hard they trained."',
+  '"The grind is quiet. The results are loud."',
+  '"Every second of focus is a second closer to AIR 1."',
+  '"Sit. Study. Win. Repeat."',
+  '"Your future self is watching you right now."'
+];
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  initCountdown();
+  initHome();
+  initPlanner();
+  initDiary();
+  initVault();
+  initMistakes();
+  initPYQ();
+  initStats();
+  initNotifications();
+  initHabits();
+  initPWA();
+  // Set today's date in diary
+  document.getElementById('diary-date').value = todayISO();
+  document.getElementById('mock-date').value = todayISO();
+  // Daily target from storage
+  const target = DB.getObj('settings').dailyTarget || 8;
+  document.getElementById('daily-target-input').value = target;
+  // Random quote
+  document.getElementById('home-quote').textContent = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  // Check war mode
+  checkWarMode();
+});
+
+function todayISO(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// ─────────────────────────────────────────────
+// COUNTDOWN
+// ─────────────────────────────────────────────
+function initCountdown(){
+  updateCountdown();
+  setInterval(updateCountdown, 60000);
+}
+function updateCountdown(){
+  const now = new Date();
+  const diff = EXAM_DATE - now;
+  const days = Math.max(0, Math.ceil(diff/(1000*60*60*24)));
+  const el = document.getElementById('countdown-days');
+  el.textContent = days;
+  // Progress bar: from Mar 1 2026 to exam
+  const start = new Date('2026-03-01');
+  const pct = Math.min(100,((now-start)/(EXAM_DATE-start))*100);
+  document.getElementById('year-fill').style.width = pct.toFixed(1)+'%';
+  document.getElementById('year-pct-label').textContent = Math.round(pct)+'%';
+  // War mode colour
+  if(days<=100){
+    el.classList.add('war');
+  }
+  // Today's date display
+  const opts={weekday:'short',day:'numeric',month:'short'};
+  document.getElementById('home-today-date').textContent = now.toLocaleDateString('en-IN',opts);
+}
+
+// ─────────────────────────────────────────────
+// WAR MODE
+// ─────────────────────────────────────────────
+function checkWarMode(){
+  const now=new Date();
+  const days=Math.ceil((EXAM_DATE-now)/(1000*60*60*24));
+  const settings=DB.getObj('settings');
+  if(days<=100||settings.warMode){
+    document.getElementById('war-mode-toggle').classList.add('on');
+    document.getElementById('war-overlay').style.display='block';
+    document.getElementById('war-timer-btn').style.color='var(--red)';
+  }
+}
+function applyWarMode(){
+  const on=document.getElementById('war-mode-toggle').classList.contains('on');
+  document.getElementById('war-overlay').style.display=on?'block':'none';
+  const s=DB.getObj('settings');s.warMode=on;DB.setObj('settings',s);
+}
+
+// ─────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────
+const NAV_SCREENS=['home','planner','stats','vault','settings'];
+const ALL_SCREENS=['home','planner','diary','stats','vault','mistakes','pyq','settings'];
+function switchTab(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tab+'-screen').classList.add('active');
+  if(document.getElementById('nav-'+tab)) document.getElementById('nav-'+tab).classList.add('active');
+  document.getElementById('screen-area').scrollTop=0;
+  // Lazy init
+  if(tab==='stats') renderStats();
+  if(tab==='vault') renderVault();
+  if(tab==='diary') renderDiaryList();
+  if(tab==='mistakes') renderMistakes();
+  if(tab==='pyq') renderPYQ();
+  if(tab==='planner') renderPlanner();
+  if(tab==='home') renderHomePlan();
+  if(tab==='habits') renderHabitsScreen();
+}
+function setStatTab(tab,el){
+  ['subjects','mocks','focus'].forEach(t=>{
+    const panel=document.getElementById('stat-'+t+'-panel');
+    if(panel) panel.style.display=t===tab?'block':'none';
+  });
+  if(el){
+    document.querySelectorAll('#stats-screen .tab-pill').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if(tab==='mocks') renderMocksList();
+  if(tab==='subjects') renderStats();
+  if(tab==='focus') renderFocusStats();
+}
+
+// ─────────────────────────────────────────────
+// HOME – Today's Plan
+// ─────────────────────────────────────────────
+function initHome(){ renderHomePlan(); }
+function renderHomePlan(){
+  const tasks = DB.get('tasks').filter(t=>t.phase==='daily');
+  const container = document.getElementById('home-today-plan');
+  // Remove old task rows (keep header)
+  container.querySelectorAll('.task-row').forEach(r=>r.remove());
+  if(!tasks.length){
+    const empty = document.createElement('div');
+    empty.style.cssText='padding:20px;text-align:center;font-size:12px;color:var(--muted);';
+    empty.textContent='No daily tasks. Add from Planner.';
+    container.appendChild(empty);
+    return;
+  }
+  // Show last 4 daily tasks
+  tasks.slice(-4).forEach(t=>{
+    const row=document.createElement('div');
+    row.className='task-row'+(t.done?' done-row':'');
+    row.dataset.id=t.id;
+    const color=SUBJECT_COLORS[t.subject]||'#8B949E';
+    const pMap={'High':'badge-high','Medium':'badge-med','Low':'badge-low'};
+    row.innerHTML=`
+      <div class="check-box${t.done?' done':''}" onclick="toggleTaskDone('${t.id}',this)"></div>
+      <div class="task-subject-bar" style="background:${color};"></div>
+      <div class="task-row-info">
+        <div class="task-row-title">${t.title}</div>
+        <div class="task-row-meta">${t.subject} · ${t.time||'?'}h</div>
+      </div>
+      <div class="badge ${pMap[t.priority]||'badge-low'}">${t.priority||'Low'}</div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ─────────────────────────────────────────────
+// PLANNER
+// ─────────────────────────────────────────────
+const DEFAULT_TASKS = [];
+function initPlanner(){
+  if(!DB.get('tasks').length) DB.set('tasks',DEFAULT_TASKS);
+  renderPlanner();
+}
+function renderPlanner(){
+  ['phase1','phase2','phase3','daily'].forEach(phase=>{
+    const tasks=DB.get('tasks').filter(t=>t.phase===phase);
+    const panel=document.getElementById('planner-'+phase);
+    if(!panel) return;
+    // Phase header
+    const headers={
+      phase1:{label:'Phase I — Foundation',desc:'Mar 2026 – Jul 2026 · Core concept mastery',bg:'rgba(0,245,160,.05)',border:'rgba(0,245,160,.15)',color:'var(--mint)'},
+      phase2:{label:'Phase II — Depth + PYQs',desc:'Aug 2026 – Nov 2026 · Advanced topics + past papers',bg:'rgba(91,140,255,.05)',border:'rgba(91,140,255,.15)',color:'var(--blue)'},
+      phase3:{label:'Phase III — WAR MODE 🔴',desc:'Dec 2026 – Feb 2027 · Revision, mocks, full power',bg:'rgba(255,59,59,.05)',border:'rgba(255,59,59,.2)',color:'var(--red)'},
+      daily:{label:'Daily Tasks',desc:'Today\'s battle plan',bg:'rgba(255,181,71,.05)',border:'rgba(255,181,71,.15)',color:'var(--yellow)'}
+    };
+    const h=headers[phase];
+    let html=`<div class="phase-indicator" style="background:${h.bg};border:1px solid ${h.border};">
+      <div class="phase-title" style="color:${h.color};">${h.label}</div>
+      <div class="phase-desc">${h.desc}</div>
+    </div>`;
+    if(!tasks.length){
+      html+=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-msg">No tasks yet</div><div>Add your first task above</div></div>`;
+    } else {
+      tasks.forEach(t=>{
+        const color=SUBJECT_COLORS[t.subject]||'#8B949E';
+        const pMap={'High':'badge-high','Medium':'badge-med','Low':'badge-low'};
+        html+=`<div class="planner-card${t.done?' done-card':''}" data-id="${t.id}">
+          <div class="planner-color" style="background:${color};"></div>
+          <div class="planner-body">
+            <div class="planner-task-title">${t.title}</div>
+            <div class="planner-meta">
+              <span class="planner-time">🕐 ${t.time}h</span>
+              <span class="badge ${pMap[t.priority]||'badge-low'}">${t.priority}</span>
+              <span style="font-size:10px;color:var(--muted);">${t.subject}</span>
+            </div>
+          </div>
+          <div class="check-box${t.done?' done':''}" onclick="toggleTaskDone('${t.id}',this)"></div>
+        </div>`;
+      });
+    }
+    panel.innerHTML=html;
+  });
+}
+function setPlannerTab(el,phase){
+  document.querySelectorAll('#planner-tabs .tab-pill').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['phase1','phase2','phase3','daily'].forEach(p=>{
+    document.getElementById('planner-'+p).style.display=p===phase?'block':'none';
+  });
+}
+function toggleAddTask(){
+  const panel=document.getElementById('add-task-panel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')) panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function saveNewTask(){
+  const title=document.getElementById('new-task-title').value.trim();
+  if(!title) return;
+  const task={
+    id:'t'+Date.now(),
+    title,
+    subject:document.getElementById('new-task-subject').value,
+    priority:document.getElementById('new-task-priority').value,
+    time:parseFloat(document.getElementById('new-task-time').value)||1,
+    phase:document.getElementById('new-task-phase').value,
+    done:false,
+    created:new Date().toISOString()
+  };
+  const tasks=DB.get('tasks');tasks.push(task);DB.set('tasks',tasks);
+  document.getElementById('new-task-title').value='';
+  document.getElementById('new-task-time').value='';
+  document.getElementById('add-task-panel').classList.remove('open');
+  renderPlanner();
+  renderHomePlan();
+}
+function toggleTaskDone(id,checkEl){
+  const tasks=DB.get('tasks');
+  const t=tasks.find(x=>x.id===id);
+  if(!t) return;
+  t.done=!t.done;
+  DB.set('tasks',tasks);
+  checkEl.classList.toggle('done');
+  const parent=checkEl.closest('.task-row,.planner-card');
+  if(parent) parent.classList.toggle(checkEl.closest('.task-row')?'done-row':'done-card',t.done);
+  if(checkEl.closest('.task-row-title')) checkEl.closest('.task-row').querySelector('.task-row-title')?.style.setProperty('text-decoration',t.done?'line-through':'none');
+}
+
+// ─────────────────────────────────────────────
+// DIARY
+// ─────────────────────────────────────────────
+function initDiary(){ renderDiaryList(); }
+function saveDiaryEntry(){
+  const entry={
+    id:'e'+Date.now(),
+    date:document.getElementById('diary-date').value,
+    subject:document.getElementById('diary-subject').value,
+    topic:document.getElementById('diary-topic').value.trim(),
+    hours:parseFloat(document.getElementById('diary-hours').value)||0,
+    rating:parseInt(document.getElementById('diary-rating').value),
+    notes:document.getElementById('diary-notes').value.trim(),
+    created:new Date().toISOString()
+  };
+  if(!entry.topic||!entry.hours){alert('Fill in topic and hours!');return;}
+  const entries=DB.get('diary');entries.unshift(entry);DB.set('diary',entries);
+  document.getElementById('diary-topic').value='';
+  document.getElementById('diary-hours').value='';
+  document.getElementById('diary-notes').value='';
+  renderDiaryList();
+}
+function renderDiaryList(){
+  const entries=DB.get('diary');
+  const el=document.getElementById('diary-entries-list');
+  if(!entries.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">📔</div><div class="empty-msg">No entries yet</div><div>Log your first study session above</div></div>`;
+    return;
+  }
+  el.innerHTML=entries.map(e=>{
+    const dots=Array.from({length:5},(_,i)=>`<div class="rating-dot" style="background:${i<e.rating?'var(--mint)':'rgba(255,255,255,0.15)'}"></div>`).join('');
+    return `<div class="diary-entry-card">
+      <div class="diary-entry-date">${formatDate(e.date)}</div>
+      <div class="diary-entry-subject">${e.subject}</div>
+      <div class="diary-entry-topic">${e.topic}</div>
+      <div class="diary-entry-footer">
+        <div class="diary-hrs">🕐 ${e.hours}h</div>
+        <div class="rating-dots">${dots}</div>
+        ${e.notes?`<div style="font-size:10px;color:var(--muted);margin-left:4px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${e.notes}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function formatDate(iso){
+  if(!iso) return '';
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// ─────────────────────────────────────────────
+// STATS
+// ─────────────────────────────────────────────
+const DEFAULT_SUBJECTS = [
+  {name:'Data Structures',hrs:24,color:'#5B8CFF'},
+  {name:'Algorithms',hrs:20,color:'#4ADECD'},
+  {name:'Operating Systems',hrs:22,color:'#00F5A0'},
+  {name:'DBMS',hrs:16,color:'#FFB547'},
+  {name:'Computer Networks',hrs:12,color:'#C97FFF'},
+  {name:'TOC',hrs:10,color:'#FF6B6B'},
+  {name:'COA',hrs:14,color:'#FF9F4A'},
+  {name:'Compiler Design',hrs:8,color:'#F472B6'},
+  {name:'Engg. Mathematics',hrs:18,color:'#34D399'},
+  {name:'C Programming',hrs:2,color:'#60A5FA'},
+  {name:'General Aptitude',hrs:1,color:'#FBBF24'},
+];
+let donutChart=null, mockChart=null, focusChart=null;
+
+function initStats(){}
+function renderStats(){
+  const subjects = DEFAULT_SUBJECTS;
+  const total = subjects.reduce((a,s)=>a+s.hrs,0);
+  document.getElementById('total-hrs-stat').textContent = total+'h';
+  // Build subject list
+  const sorted=[...subjects].sort((a,b)=>b.hrs-a.hrs);
+  const maxHrs=sorted[0].hrs;
+  const weakest=sorted[sorted.length-1];
+  const strongest=sorted[0];
+  const listEl=document.getElementById('subject-stats-list');
+  listEl.innerHTML=sorted.map(s=>{
+    const pct=Math.round((s.hrs/maxHrs)*100);
+    const isWeak=s.name===weakest.name;
+    const isStrong=s.name===strongest.name;
+    return `<div class="subject-stat-row">
+      <div class="subj-stat-top">
+        <div class="subj-stat-left">
+          <div class="subj-dot" style="background:${s.color};"></div>
+          <span class="subj-name">${s.name}</span>
+          ${isWeak?'<span class="badge badge-weak">WEAK</span>':''}
+          ${isStrong?'<span class="badge badge-strong">STRONGEST</span>':''}
+        </div>
+        <span class="subj-hrs">${s.hrs}h</span>
+      </div>
+      <div class="prog-bg">
+        <div class="prog-fill" data-w="${pct}%" style="width:0%;background:${s.color};opacity:.85;"></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Animate progress bars
+  setTimeout(()=>{
+    listEl.querySelectorAll('.prog-fill').forEach(b=>{b.style.width=b.dataset.w;});
+  },100);
+  // Donut chart
+  renderDonut(subjects);
+}
+function renderDonut(subjects){
+  const ctx=document.getElementById('donut-chart');
+  if(!ctx) return;
+  if(donutChart){donutChart.destroy();donutChart=null;}
+  donutChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:subjects.map(s=>s.name),
+      datasets:[{data:subjects.map(s=>s.hrs),backgroundColor:subjects.map(s=>s.color+'CC'),borderColor:subjects.map(s=>s.color),borderWidth:1.5,hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,cutout:'68%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}h`}}
+      },
+      animation:{animateRotate:true,duration:1200}
+    }
+  });
+}
+function setStatTab(tab,el){
+  ['subjects','mocks','focus'].forEach(t=>{
+    const p=document.getElementById('stat-'+t+'-panel');
+    if(p) p.style.display=t===tab?'block':'none';
+  });
+  if(el){
+    document.querySelectorAll('#stats-screen .tab-pill').forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if(tab==='mocks'){renderMocksList();renderMockTrend();}
+  if(tab==='subjects') renderStats();
+  if(tab==='focus') renderFocusStats();
+}
+// Mock
+const DEFAULT_MOCKS=[];
+function initMockData(){if(!DB.get('mocks').length) DB.set('mocks',DEFAULT_MOCKS);}
+function openAddMock(){
+  const p=document.getElementById('add-mock-panel');
+  p.classList.toggle('open');
+}
+function saveMock(){
+  initMockData();
+  const num=document.getElementById('mock-num').value.trim();
+  const score=parseFloat(document.getElementById('mock-score').value);
+  if(!num||!score){alert('Fill in mock number and score');return;}
+  const m={
+    id:'m'+Date.now(),
+    num:'Mock '+num,
+    score,
+    acc:parseFloat(document.getElementById('mock-acc').value)||0,
+    date:document.getElementById('mock-date').value,
+    notes:document.getElementById('mock-notes').value
+  };
+  const mocks=DB.get('mocks');mocks.push(m);DB.set('mocks',mocks);
+  document.getElementById('mock-num').value='';
+  document.getElementById('mock-score').value='';
+  document.getElementById('mock-acc').value='';
+  document.getElementById('mock-notes').value='';
+  document.getElementById('add-mock-panel').classList.remove('open');
+  renderMocksList();renderMockTrend();
+}
+function renderMocksList(){
+  initMockData();
+  const mocks=DB.get('mocks').slice().reverse();
+  const el=document.getElementById('mocks-list');
+  if(!el) return;
+  if(!mocks.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📈</div><div class="empty-msg">No mocks logged yet</div></div>';return;}
+  el.innerHTML=mocks.map(m=>`
+    <div class="mock-card">
+      <div class="mock-header">
+        <div class="mock-num">${m.num}</div>
+        <div class="mock-date">${formatDate(m.date)}</div>
+      </div>
+      <div class="mock-score-row">
+        <div class="mock-score-box">
+          <div class="mock-score-val num" style="color:var(--mint);">${m.score}</div>
+          <div class="mock-score-lbl">Score</div>
+        </div>
+        <div class="mock-score-box">
+          <div class="mock-score-val num" style="color:var(--blue);">${m.acc}%</div>
+          <div class="mock-score-lbl">Accuracy</div>
+        </div>
+        <div class="mock-score-box">
+          <div class="mock-score-val num" style="color:var(--yellow);">${m.score>=50?'↑':'↓'}</div>
+          <div class="mock-score-lbl">Trend</div>
+        </div>
+      </div>
+      ${m.notes?`<div style="font-size:11px;color:var(--muted);padding-top:8px;border-top:1px solid var(--border);">${m.notes}</div>`:''}
+    </div>
+  `).join('');
+}
+function renderMockTrend(){
+  initMockData();
+  const mocks=DB.get('mocks');
+  const ctx=document.getElementById('mock-trend-chart');
+  if(!ctx) return;
+  if(mockChart){mockChart.destroy();mockChart=null;}
+  mockChart=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:mocks.map(m=>m.num.replace('Mock ','')),
+      datasets:[{
+        label:'Score',data:mocks.map(m=>m.score),
+        borderColor:'#00F5A0',backgroundColor:'rgba(0,245,160,0.08)',
+        borderWidth:2,pointBackgroundColor:'#00F5A0',
+        pointRadius:4,tension:0.4,fill:true
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#8B949E',font:{size:11}}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#8B949E',font:{size:11}},min:0,max:100}
+      },
+      plugins:{legend:{display:false}},
+      animation:{duration:1000}
+    }
+  });
+}
+function renderFocusStats(){
+  const sessions=DB.get('focus_sessions');
+  const totalMins=sessions.reduce((a,s)=>a+(s.mins||0),0);
+  const totalSess=sessions.length;
+  document.getElementById('total-focus-stat').textContent=Math.round(totalMins/60*10)/10||0;
+  document.getElementById('total-sessions-stat').textContent=totalSess;
+  // Weekly data
+  const weekly={};
+  sessions.forEach(s=>{
+    const d=s.date||todayISO();
+    weekly[d]=(weekly[d]||0)+(s.mins||0);
+  });
+  const last7=[];
+  const labels=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    last7.push(Math.round((weekly[k]||0)/60*10)/10);
+    labels.push(d.toLocaleDateString('en',{weekday:'short'}));
+  }
+  const bestDay=Math.max(...last7);
+  document.getElementById('best-day-stat').textContent=bestDay+'h';
+  const ctx=document.getElementById('focus-chart');
+  if(ctx){
+    if(focusChart){focusChart.destroy();focusChart=null;}
+    focusChart=new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels,
+        datasets:[{data:last7,backgroundColor:'rgba(91,140,255,0.5)',borderColor:'#5B8CFF',borderWidth:1.5,borderRadius:6}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:true,
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#8B949E',font:{size:11}}},
+          y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#8B949E',font:{size:11}},min:0}
+        },
+        plugins:{legend:{display:false}},
+        animation:{duration:800}
+      }
+    });
+  }
+}
+
+// ─────────────────────────────────────────────
+// VAULT
+// ─────────────────────────────────────────────
+const VAULT_DATA = {
+  'Data Structures':[
+    {id:'v1',expr:'T(n) = 2T(n/2) + O(n)',exp:'Merge Sort recurrence — resolves to O(n log n) by Master Theorem',example:'T(8)=2T(4)+8 → 8+8+8=24 ≈ n log n',starred:false},
+    {id:'v2',expr:'h = ⌊log₂n⌋',exp:'Height of a complete binary tree with n nodes',example:'n=15: h=⌊log₂15⌋=3',starred:false},
+    {id:'v3',expr:'O(1) → O(log n) → O(n) → O(n log n) → O(n²)',exp:'Complexity ordering — memorize this!',example:'BST search O(log n), Bubble Sort O(n²)',starred:true},
+    {id:'v4',expr:'In: Left→Root→Right | Pre: Root→L→R | Post: L→R→Root',exp:'Tree traversal orders',example:'Inorder BST gives sorted output',starred:false},
+  ],
+  'Algorithms':[
+    {id:'v5',expr:'T(n)=aT(n/b)+f(n)',exp:'Master Theorem for divide & conquer recurrences',example:'Merge: a=2,b=2,f=n → Case 2 → O(n log n)',starred:true},
+    {id:'v6',expr:'Dijkstra: O((V+E)log V)',exp:'With binary heap; O(V²) with adjacency matrix',example:'Dense graph: use matrix; sparse: heap',starred:false},
+    {id:'v7',expr:'DP: Optimal substructure + Overlapping subproblems',exp:'Both conditions must hold for DP to apply',example:'LCS, LIS, Knapsack, Matrix Chain',starred:true},
+  ],
+  'TOC':[
+    {id:'v8',expr:'DFA: δ: Q×Σ→Q | NFA: δ: Q×Σ→2^Q',exp:'DFA transition is deterministic; NFA allows multiple/no transitions',example:'NFA can be converted to DFA (subset construction)',starred:false},
+    {id:'v9',expr:"L={aⁿbⁿ|n≥0} is CFL, not Regular",exp:'Requires stack (PDA); pumping lemma for regular fails',example:"PDA pushes a's, pops on b's",starred:true},
+    {id:'v10',expr:'RE ⊂ DCFL ⊂ CFL ⊂ CSL ⊂ RE ⊂ ALL',exp:'Chomsky hierarchy — regular is subset of all others',example:'Know at least 2 examples for each class',starred:false},
+  ],
+  'DBMS':[
+    {id:'v11',expr:'F⁺: Armstrong Axioms → Reflexivity, Augmentation, Transitivity',exp:'Closure of FD set — basis for finding keys',example:"If A→B and B→C, then A→C (transitivity)",starred:true},
+    {id:'v12',expr:'BCNF: For every X→Y, X is superkey',exp:'Stronger than 3NF; may lose dependency preservation',example:'3NF allows non-prime → prime; BCNF does not',starred:false},
+    {id:'v13',expr:'Serializability: Conflict ↔ Precedence graph acyclic',exp:'Schedule is conflict-serializable iff no cycle in precedence graph',example:'Ri(A)→Wi(A): draw edge i→j if conflict',starred:false},
+  ],
+  'Operating Systems':[
+    {id:'v14',expr:'CPU Util = 1 - pⁿ',exp:'CPU utilization with n processes, p = fraction in I/O wait',example:'n=4, p=0.8: util=1-0.8⁴=1-0.4096=59%',starred:true},
+    {id:'v15',expr:'EAT = h·t_cache + (1-h)·t_main',exp:'Effective Access Time with cache hit ratio h',example:'h=0.9, t_c=10, t_m=100: EAT=0.9×10+0.1×100=19ns',starred:true},
+    {id:'v16',expr:'Banker: Safe if ∃ safe sequence for all processes',exp:'Deadlock avoidance — need: max, allocation, available',example:'GATE loves Banker\'s algorithm numericals',starred:false},
+  ],
+  'Computer Networks':[
+    {id:'v17',expr:'TCP: Slow Start → CWND doubles; Congestion Avoid: CWND+1',exp:'After ssthresh: additive increase, multiplicative decrease (AIMD)',example:'Loss event: ssthresh=CWND/2, CWND=1',starred:true},
+    {id:'v18',expr:'Bandwidth × Delay = Pipe size (bits)',exp:'Bandwidth-Delay Product = number of bits in transit',example:'1Gbps × 10ms = 10⁷ bits in pipe',starred:false},
+  ],
+  'Engg. Mathematics':[
+    {id:'v19',expr:'Eigenvalues: det(A−λI)=0',exp:'Characteristic polynomial — roots are eigenvalues',example:'Trace(A)=Σλᵢ, Det(A)=Πλᵢ',starred:true},
+    {id:'v20',expr:"Bayes: P(A|B) = P(B|A)·P(A)/P(B)",exp:'Conditional probability — appears every GATE',example:"P(B) = P(B|A)P(A) + P(B|A')P(A')",starred:true},
+  ],
+  'Compiler Design':[
+    {id:'v21',expr:'First(A): terminals reachable as 1st symbol; Follow(A): after A',exp:'Used to build LL(1) parsing table',example:'Add $ to Follow(Start)',starred:false},
+    {id:'v22',expr:'LL(1): No left recursion, no ambiguity; LR(k): more powerful',exp:'LR(0) ⊂ SLR ⊂ LALR ⊂ LR(1)',example:'LALR(1) used in yacc/bison',starred:true},
+  ],
+};
+function initVault(){}
+function renderVault(){
+  const el=document.getElementById('vault-content');
+  if(el.dataset.built) return;
+  el.dataset.built='1';
+  const starred=DB.getObj('vault_stars',{});
+  el.innerHTML=Object.entries(VAULT_DATA).map(([subj,items])=>`
+    <div class="vault-accordion" data-subj="${subj}">
+      <div class="vault-acc-head" onclick="toggleAccordion(this)">
+        <span class="vault-acc-subj">${subj}</span>
+        <div class="vault-acc-right">
+          <span class="vault-acc-count">${items.length} formulas</span>
+          <span class="vault-chevron">▼</span>
+        </div>
+      </div>
+      <div class="vault-acc-body">
+        ${items.map(f=>`
+          <div class="formula-item" data-id="${f.id}" data-subj="${subj}">
+            <button class="formula-star-btn${starred[f.id]?' on':''}" onclick="toggleStar('${f.id}',this)">★</button>
+            <div class="formula-expr">${f.expr}</div>
+            <div class="formula-exp">${f.exp}</div>
+            ${f.example?`<div class="formula-example">📌 ${f.example}</div>`:''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+function toggleAccordion(head){
+  const body=head.nextElementSibling;
+  const chevron=head.querySelector('.vault-chevron');
+  body.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+function toggleStar(id,btn){
+  const stars=DB.getObj('vault_stars',{});
+  stars[id]=!stars[id];
+  DB.setObj('vault_stars',stars);
+  btn.classList.toggle('on',stars[id]);
+}
+function filterVault(q){
+  renderVault();
+  const s=q.toLowerCase().trim();
+  document.querySelectorAll('.vault-accordion').forEach(acc=>{
+    const items=acc.querySelectorAll('.formula-item');
+    let any=false;
+    items.forEach(item=>{
+      const match=!s||item.textContent.toLowerCase().includes(s);
+      item.style.display=match?'':'none';
+      if(match) any=true;
+    });
+    acc.style.display=(!s||any)?'block':'none';
+    if(s&&any){
+      acc.querySelector('.vault-acc-body').classList.add('open');
+      acc.querySelector('.vault-chevron').classList.add('open');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// MISTAKES
+// ─────────────────────────────────────────────
+const DEFAULT_MISTAKES=[];
+function initMistakes(){
+  if(!DB.get('mistakes').length) DB.set('mistakes',DEFAULT_MISTAKES);
+  renderMistakes();
+}
+function toggleMistakeForm(){
+  const p=document.getElementById('add-mistake-panel');
+  p.classList.toggle('open');
+}
+function saveMistake(){
+  const topic=document.getElementById('m-topic').value.trim();
+  const lesson=document.getElementById('m-lesson').value.trim();
+  if(!topic) return;
+  const m={
+    id:'ms'+Date.now(),
+    mock:document.getElementById('m-mock').value.trim(),
+    qnum:document.getElementById('m-qnum').value.trim(),
+    subject:document.getElementById('m-subject').value,
+    type:document.getElementById('m-type').value,
+    topic,lesson,
+    date:todayISO()
+  };
+  const ms=DB.get('mistakes');ms.unshift(m);DB.set('mistakes',ms);
+  document.getElementById('m-topic').value='';
+  document.getElementById('m-lesson').value='';
+  document.getElementById('m-mock').value='';
+  document.getElementById('m-qnum').value='';
+  document.getElementById('add-mistake-panel').classList.remove('open');
+  renderMistakes();
+}
+function filterMistakes(type,el){
+  document.querySelectorAll('#mistake-filter-row .pyq-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderMistakes(type);
+}
+function renderMistakes(filter='all'){
+  let ms=DB.get('mistakes');
+  if(filter!=='all') ms=ms.filter(m=>m.type===filter);
+  // Find repeated topics
+  const topicCounts={};
+  DB.get('mistakes').forEach(m=>{ topicCounts[m.topic]=(topicCounts[m.topic]||0)+1; });
+  const el=document.getElementById('mistakes-list');
+  if(!ms.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-msg">No mistakes here!</div><div>Keep it that way.</div></div>`;
+    return;
+  }
+  const typeMap={'conceptual':'mt-conceptual','silly':'mt-silly','time':'mt-time'};
+  const typeLabel={'conceptual':'Conceptual','silly':'Silly','time':'Time Issue'};
+  el.innerHTML=ms.map(m=>{
+    const repeated=topicCounts[m.topic]>1;
+    const borderClass=m.type==='silly'?'type-silly':m.type==='time'?'type-time':'';
+    return `<div class="mistake-card ${borderClass}">
+      <div class="mistake-header">
+        <div class="mistake-mock">${m.mock||'—'} · ${m.qnum||'—'} · <span style="color:var(--text);">${m.subject}</span></div>
+        <div class="mistake-type ${typeMap[m.type]||'mt-conceptual'}">${typeLabel[m.type]||m.type}</div>
+      </div>
+      <div class="mistake-topic">${m.topic}</div>
+      ${m.lesson?`<div class="mistake-lesson">${m.lesson}</div>`:''}
+      ${repeated?`<div class="mistake-repeat">⚠ Repeated mistake topic!</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// PYQ
+// ─────────────────────────────────────────────
+const DEFAULT_PYQS=[];
+let activeSubjFilter='All';
+function initPYQ(){
+  if(!DB.get('pyqs').length) DB.set('pyqs',DEFAULT_PYQS);
+  renderPYQ();
+}
+function togglePYQForm(){
+  const p=document.getElementById('add-pyq-panel');
+  p.classList.toggle('open');
+}
+function savePYQ(){
+  const year=parseInt(document.getElementById('pyq-year').value);
+  const q=document.getElementById('pyq-question').value.trim();
+  if(!year||!q) return;
+  const p={
+    id:'p'+Date.now(),
+    year,
+    subject:document.getElementById('pyq-subject').value,
+    question:q,
+    status:document.getElementById('pyq-status').value,
+    date:todayISO()
+  };
+  const pyqs=DB.get('pyqs');pyqs.unshift(p);DB.set('pyqs',pyqs);
+  document.getElementById('pyq-year').value='';
+  document.getElementById('pyq-question').value='';
+  document.getElementById('add-pyq-panel').classList.remove('open');
+  renderPYQ();
+}
+function filterPYQ(el){
+  document.querySelectorAll('#pyq-subj-filter .pyq-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  activeSubjFilter=el.textContent;
+  renderPYQ();
+}
+function renderPYQ(){
+  let pyqs=DB.get('pyqs');
+  if(activeSubjFilter&&activeSubjFilter!=='All') pyqs=pyqs.filter(p=>p.subject===activeSubjFilter);
+  const total=pyqs.filter(p=>p.status!=='unattempted').length;
+  const correct=pyqs.filter(p=>p.status==='correct').length;
+  const acc=total?Math.round(correct/total*100):0;
+  document.getElementById('pyq-total').textContent=total;
+  document.getElementById('pyq-correct').textContent=correct;
+  document.getElementById('pyq-acc').textContent=acc+'%';
+  // Find repeated questions by topic/year
+  const el=document.getElementById('pyq-list');
+  if(!pyqs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-msg">No PYQs logged</div></div>';return;}
+  el.innerHTML=pyqs.map(p=>`
+    <div class="pyq-item ${p.status}">
+      <div class="pyq-top">
+        <span class="pyq-year">GATE ${p.year}</span>
+        <span class="pyq-subj">${p.subject}</span>
+      </div>
+      <div class="pyq-q">${p.question}</div>
+      <div class="pyq-bottom">
+        <button class="pyq-status-btn ${p.status==='correct'?'correct':p.status==='wrong'?'wrong':''}" 
+          onclick="cyclePYQStatus('${p.id}',this)">
+          ${p.status==='correct'?'✓ Correct':p.status==='wrong'?'✗ Wrong':'○ Not attempted'}
+        </button>
+        ${p.year<=2020?`<div class="pyq-repeat-flag">★ High repeat chance</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+function cyclePYQStatus(id,btn){
+  const pyqs=DB.get('pyqs');
+  const p=pyqs.find(x=>x.id===id);
+  if(!p) return;
+  const cycle=['unattempted','correct','wrong'];
+  const idx=cycle.indexOf(p.status);
+  p.status=cycle[(idx+1)%3];
+  DB.set('pyqs',pyqs);
+  btn.textContent=p.status==='correct'?'✓ Correct':p.status==='wrong'?'✗ Wrong':'○ Not attempted';
+  btn.className='pyq-status-btn '+(p.status==='correct'?'correct':p.status==='wrong'?'wrong':'');
+  const card=btn.closest('.pyq-item');
+  card.className='pyq-item '+p.status;
+  renderPYQ();
+}
+
+// ─────────────────────────────────────────────
+// FOCUS TIMER
+// ─────────────────────────────────────────────
+let timerInterval=null;
+let timerState={
+  focusMins:25,breakMins:5,
+  secs:25*60,running:false,isFocus:true,
+  todayMins:0,todaySessions:0
+};
+const CIRC=603.19;
+function openTimerModal(){
+  document.getElementById('timer-modal').classList.add('open');
+  updateTimerDisplay();
+  updateTimerQuote();
+}
+function closeTimerModal(){
+  document.getElementById('timer-modal').classList.remove('open');
+  // Don't stop the timer
+}
+function setTimerMode(el,focus,brk){
+  document.querySelectorAll('.timer-mode-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  // Stop existing
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;timerState.running=false;}
+  timerState={...timerState,focusMins:focus,breakMins:brk,secs:focus*60,isFocus:true};
+  document.getElementById('timer-start-btn').textContent='START';
+  const arc=document.getElementById('timer-arc');
+  if(focus>=90){
+    arc.style.stroke='var(--red)';
+    arc.style.filter='drop-shadow(0 0 10px rgba(255,59,59,.6))';
+  } else {
+    arc.style.stroke='var(--mint)';
+    arc.style.filter='drop-shadow(0 0 8px rgba(0,245,160,.5))';
+  }
+  updateTimerDisplay();
+}
+function toggleTimer(){
+  if(timerState.running){
+    clearInterval(timerInterval);timerInterval=null;
+    timerState.running=false;
+    document.getElementById('timer-start-btn').textContent='RESUME';
+  } else {
+    timerState.running=true;
+    document.getElementById('timer-start-btn').textContent='PAUSE';
+    timerInterval=setInterval(timerTick,1000);
+  }
+}
+function resetTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  timerState.running=false;timerState.isFocus=true;
+  timerState.secs=timerState.focusMins*60;
+  document.getElementById('timer-start-btn').textContent='START';
+  updateTimerDisplay();
+}
+function updateTimerDisplay(){
+  const m=Math.floor(timerState.secs/60).toString().padStart(2,'0');
+  const s=(timerState.secs%60).toString().padStart(2,'0');
+  document.getElementById('timer-display').textContent=m+':'+s;
+  document.getElementById('timer-phase-lbl').textContent=timerState.isFocus?'Focus':'Break';
+  const total=(timerState.isFocus?timerState.focusMins:timerState.breakMins)*60;
+  const pct=timerState.secs/total;
+  document.getElementById('timer-arc').style.strokeDashoffset=CIRC*(1-pct);
+  // Session info
+  const h=Math.floor(timerState.todayMins/60);
+  const min=timerState.todayMins%60;
+  document.getElementById('timer-total-today').textContent=h+'h '+min+'m';
+  document.getElementById('timer-sessions-today').textContent=timerState.todaySessions;
+}
+function updateTimerQuote(){
+  const q=MOTIVATIONS[Math.floor(Math.random()*MOTIVATIONS.length)];
+  document.getElementById('timer-motivate').textContent=q;
+}
+
+// ─────────────────────────────────────────────
+// QUICK ADD
+// ─────────────────────────────────────────────
+function openQuickAdd(){document.getElementById('quick-add-modal').classList.add('open');}
+function closeQuickAdd(){document.getElementById('quick-add-modal').classList.remove('open');}
+
+// ─────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────
+function saveDailyTarget(val){
+  const s=DB.getObj('settings');s.dailyTarget=parseInt(val)||8;DB.setObj('settings',s);
+  document.getElementById('daily-target-label').textContent=val+' hours / day';
+}
+function exportData(){
+  const data={tasks:DB.get('tasks'),diary:DB.get('diary'),mocks:DB.get('mocks'),
+    mistakes:DB.get('mistakes'),pyqs:DB.get('pyqs'),focus:DB.get('focus_sessions')};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='warroom-backup-'+todayISO()+'.json';a.click();
+}
+function clearAllData(){
+  if(confirm('Clear ALL data? This cannot be undone.')){
+    ['tasks','diary','mocks','mistakes','pyqs','focus_sessions','vault_stars','habits','habit_logs','notifications','settings'].forEach(k=>localStorage.removeItem('wr_'+k));
+    location.reload();
+  }
+}
+
+// ─────────────────────────────────────────────
+// HABIT TRACKER
+// ─────────────────────────────────────────────
+
+const DEFAULT_HABITS = [];
+
+const HABIT_EMOJIS = [
+  '📚','🌅','💪','📵','🔐','📔','🛌','⏱','🧠','⚔️',
+  '🎯','✏️','🔥','💧','🏃','🧘','🍎','💡','📝','🌙',
+  '☀️','🎵','🧩','🔬','💻','📊','🏆','⚡','🌿','🦁'
+];
+
+let selectedEmoji = '📚';
+
+function initHabits(){
+  if(!DB.get('habits').length) DB.set('habits', DEFAULT_HABITS);
+  renderHabitsScreen();
+  renderHomeStreakWidget();
+}
+
+function dateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function todayStr(){ return dateStr(new Date()); }
+
+function getHabitLogs(){ return DB.getObj('habit_logs', {}); }
+function saveHabitLogs(logs){ DB.setObj('habit_logs', logs); }
+
+// ── Streak calculation ──
+function calcOverallStreak(){
+  const logs = getHabitLogs();
+  const habits = DB.get('habits');
+  if(!habits.length) return {current:0, best:0};
+
+  let current = 0, best = 0, streak = 0;
+  const today = new Date();
+
+  // Walk backwards from yesterday (today counts only if all done)
+  const todayLog = logs[todayStr()] || {};
+  const todayDone = habits.filter(h => todayLog[h.id]).length;
+  const todayComplete = todayDone >= Math.ceil(habits.length * 0.6); // 60% threshold
+
+  for(let d = todayComplete ? 0 : 1; d <= 365; d++){
+    const date = new Date(today);
+    date.setDate(today.getDate() - d);
+    const ds = dateStr(date);
+    const log = logs[ds] || {};
+    const done = habits.filter(h => log[h.id]).length;
+    if(done >= Math.ceil(habits.length * 0.6)){
+      streak++;
+      best = Math.max(best, streak);
+    } else {
+      if(d === 0 || d === 1) { streak = 0; }
+      break;
+    }
+  }
+  current = streak;
+
+  // Also find all-time best
+  const allDates = Object.keys(logs).sort();
+  let tempStreak = 0, allBest = 0;
+  allDates.forEach(ds => {
+    const log = logs[ds] || {};
+    const done = habits.filter(h => log[h.id]).length;
+    if(done >= Math.ceil(habits.length * 0.6)){
+      tempStreak++;
+      allBest = Math.max(allBest, tempStreak);
+    } else { tempStreak = 0; }
+  });
+
+  return { current, best: Math.max(allBest, current) };
+}
+
+function calcHabitStreak(habitId){
+  const logs = getHabitLogs();
+  const today = new Date();
+  let streak = 0;
+  for(let d = 0; d <= 365; d++){
+    const date = new Date(today);
+    date.setDate(today.getDate() - d);
+    const ds = dateStr(date);
+    if(logs[ds] && logs[ds][habitId]){
+      streak++;
+    } else {
+      if(d > 0) break; // allow missing today
+    }
+  }
+  return streak;
+}
+
+// ── Toggle habit completion ──
+function toggleHabit(habitId){
+  const logs = getHabitLogs();
+  const ds = todayStr();
+  if(!logs[ds]) logs[ds] = {};
+  const wasDone = !!logs[ds][habitId];
+  logs[ds][habitId] = !wasDone;
+  saveHabitLogs(logs);
+
+  // Animate
+  const checkEl = document.getElementById('hcheck-'+habitId);
+  const itemEl  = document.getElementById('hitem-'+habitId);
+  if(checkEl){
+    checkEl.classList.toggle('done', !wasDone);
+    checkEl.classList.add('habit-pop');
+    setTimeout(()=>checkEl.classList.remove('habit-pop'), 400);
+  }
+  if(itemEl) itemEl.classList.toggle('completed', !wasDone);
+
+  // Update streak pill
+  updateHabitStreakPill(habitId);
+
+  // Update counts
+  updateHabitCompletionCount();
+  updateStreakHero();
+  renderHomeStreakWidget();
+
+  // Notification on all habits done
+  const habits = DB.get('habits');
+  const log = logs[ds] || {};
+  const doneCount = habits.filter(h => log[h.id]).length;
+  if(!wasDone && doneCount === habits.length){
+    showToast('🏆 All Habits Done!', "Perfect day, Rohan! Every habit crushed. Streak growing!", 'streak');
+    pushNotif('🏆 Perfect Habit Day!', "All habits completed today. You're unstoppable!", 'streak');
+    spawnConfetti();
+  } else if(!wasDone){
+    // Milestone toasts
+    const streak = calcHabitStreak(habitId);
+    if([7,14,21,30,50,100].includes(streak)){
+      const h = DB.get('habits').find(x=>x.id===habitId);
+      showToast(`🔥 ${streak}-Day Streak!`, `"${h?.name}" — ${streak} days straight. Keep it burning!`, 'streak');
+    }
+  }
+}
+
+function updateHabitStreakPill(habitId){
+  const pillEl = document.getElementById('hstreak-'+habitId);
+  if(!pillEl) return;
+  const s = calcHabitStreak(habitId);
+  pillEl.textContent = '🔥 '+s;
+  pillEl.className = 'habit-streak-pill '+(s >= 3 ? 'hot' : 'cold');
+}
+
+function updateHabitCompletionCount(){
+  const habits = DB.get('habits');
+  const log = (getHabitLogs()[todayStr()] || {});
+  const done = habits.filter(h => log[h.id]).length;
+  const el = document.getElementById('habits-completion-count');
+  if(el) el.textContent = done+' / '+habits.length;
+}
+
+function updateStreakHero(){
+  const {current, best} = calcOverallStreak();
+  const countEl = document.getElementById('streak-main-count');
+  const subEl   = document.getElementById('streak-sub-text');
+  const bestEl  = document.getElementById('streak-best-row');
+  const fireEl  = document.getElementById('streak-fire-icon');
+  if(countEl){
+    countEl.textContent = current;
+    countEl.className = 'streak-count num'+(current===0?' dead':'');
+  }
+  if(subEl){
+    const msgs = {0:'Start today — build the chain!',1:'Day 1 unlocked. Don\'t break it.',
+      3:'3 days strong 💪',7:'One week warrior! 🏆',14:'Two weeks of iron discipline!',
+      21:'21 days — this is a habit now!',30:'30-day legend. AIR is watching.',
+      50:'50 days. You\'re built different.',100:'100-day warrior. ELITE.'};
+    const key = [100,50,30,21,14,7,3,1,0].find(k=>current>=k);
+    subEl.textContent = 'day streak · '+(msgs[key]||'Keep the fire burning!');
+  }
+  if(bestEl) bestEl.textContent = '🏆 Best: '+best+' days';
+  if(fireEl) fireEl.textContent = current===0?'💀':current>=30?'⚡':current>=7?'🔥':'🔥';
+}
+
+// ── Render habits screen ──
+function renderHabitsScreen(){
+  renderTodayHabits();
+  updateStreakHero();
+  renderHeatmap();
+  updateHabitCompletionCount();
+  renderManageHabits();
+}
+
+function renderTodayHabits(){
+  const habits = DB.get('habits');
+  const log = getHabitLogs()[todayStr()] || {};
+  const el = document.getElementById('habits-today-list');
+  if(!el) return;
+  if(!habits.length){
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔥</div><div class="empty-msg">No habits yet</div><div>Add your first habit above</div></div>`;
+    return;
+  }
+  el.innerHTML = habits.map(h => {
+    const done = !!log[h.id];
+    const streak = calcHabitStreak(h.id);
+    const catColors = {study:'#5B8CFF',health:'#00F5A0',discipline:'#FF9F4A',mindset:'#C97FFF'};
+    const borderColor = done ? 'rgba(0,245,160,0.2)' : 'var(--border)';
+    return `<div class="habit-item${done?' completed':''}" id="hitem-${h.id}" onclick="toggleHabit('${h.id}')">
+      <div class="habit-check${done?' done':''}" id="hcheck-${h.id}"></div>
+      <div class="habit-emoji">${h.emoji}</div>
+      <div class="habit-info">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-meta">${h.category} · ${h.target}×/week</div>
+      </div>
+      <div class="habit-streak-pill ${streak>=3?'hot':'cold'}" id="hstreak-${h.id}">🔥 ${streak}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── GitHub-style heatmap ──
+function renderHeatmap(){
+  const grid  = document.getElementById('heatmap-grid');
+  const monthsEl = document.getElementById('heatmap-months');
+  if(!grid) return;
+
+  const logs   = getHabitLogs();
+  const habits = DB.get('habits');
+  const total  = habits.length || 1;
+  const today  = new Date();
+  const DAYS   = 18*7; // 18 weeks
+  const cells  = [];
+  const monthLabels = [];
+  let lastMonth = -1;
+
+  for(let d = DAYS-1; d >= 0; d--){
+    const date = new Date(today);
+    date.setDate(today.getDate() - d);
+    const ds = dateStr(date);
+    const log = logs[ds] || {};
+    const done = habits.filter(h => log[h.id]).length;
+    const pct  = done/total;
+    let lvClass = '';
+    if(pct>0)   lvClass = 'lv1';
+    if(pct>0.4) lvClass = 'lv2';
+    if(pct>0.7) lvClass = 'lv3';
+    if(pct>=1)  lvClass = 'lv4';
+    const isToday = ds === todayStr();
+    cells.push(`<div class="hm-cell ${lvClass}${isToday?' today-cell':''}" title="${ds}: ${done}/${total} habits" onclick="showHeatmapDay('${ds}','${done}','${total}')"></div>`);
+
+    // Month label tracking (place label at start of each month)
+    const m = date.getMonth();
+    if(m !== lastMonth){
+      lastMonth = m;
+      const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      // position proportionally in the 18-col grid
+      monthLabels.push({col: Math.floor((DAYS-1-d)/7), name: mNames[m]});
+    }
+  }
+
+  grid.innerHTML = cells.join('');
+
+  // Month labels
+  if(monthsEl){
+    // Build 18-wide flex row
+    const labelArr = Array(18).fill('');
+    monthLabels.forEach(ml => { if(ml.col < 18) labelArr[ml.col] = ml.name; });
+    monthsEl.innerHTML = labelArr.map(l =>
+      `<div style="flex:1;text-align:left;font-size:9px;color:var(--muted);">${l}</div>`
+    ).join('');
+  }
+}
+
+function showHeatmapDay(ds, done, total){
+  showToast(`📅 ${ds}`, `${done}/${total} habits completed`, done==total?'streak':'general', 2500);
+}
+
+// ── Add / manage habits ──
+function openAddHabitModal(){
+  document.getElementById('add-habit-modal').classList.add('open');
+  buildEmojiGrid();
+}
+function closeAddHabitModal(){
+  document.getElementById('add-habit-modal').classList.remove('open');
+}
+function buildEmojiGrid(){
+  const grid = document.getElementById('emoji-grid');
+  selectedEmoji = '📚';
+  grid.innerHTML = HABIT_EMOJIS.map(e =>
+    `<div class="emoji-btn${e===selectedEmoji?' selected':''}" onclick="selectEmoji('${e}',this)">${e}</div>`
+  ).join('');
+}
+function selectEmoji(e, el){
+  selectedEmoji = e;
+  document.querySelectorAll('.emoji-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function saveNewHabit(){
+  const name = document.getElementById('new-habit-name').value.trim();
+  if(!name){ alert('Enter a habit name!'); return; }
+  const habit = {
+    id: 'h'+Date.now(),
+    name,
+    emoji: selectedEmoji,
+    category: document.getElementById('new-habit-category').value,
+    target: parseInt(document.getElementById('new-habit-target').value),
+    createdAt: todayStr()
+  };
+  const habits = DB.get('habits');
+  habits.push(habit);
+  DB.set('habits', habits);
+  document.getElementById('new-habit-name').value = '';
+  closeAddHabitModal();
+  renderHabitsScreen();
+  renderHomeStreakWidget();
+  showToast('✅ Habit Added', `"${name}" added to your daily arsenal!`, 'study');
+}
+
+function toggleManageHabits(){
+  const sec = document.getElementById('manage-habits-section');
+  sec.style.display = sec.style.display==='none' ? 'block' : 'none';
+  renderManageHabits();
+}
+function renderManageHabits(){
+  const habits = DB.get('habits');
+  const el = document.getElementById('manage-habits-list');
+  if(!el) return;
+  if(!habits.length){ el.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0;">No habits.</div>'; return; }
+  el.innerHTML = habits.map(h => {
+    const streak = calcHabitStreak(h.id);
+    return `<div class="habit-manage-row">
+      <div class="habit-manage-emoji">${h.emoji}</div>
+      <div class="habit-manage-info">
+        <div class="habit-manage-name">${h.name}</div>
+        <div class="habit-manage-meta">${h.category} · 🔥 ${streak}-day streak</div>
+      </div>
+      <button class="habit-delete-btn" onclick="deleteHabit('${h.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+function deleteHabit(id){
+  if(!confirm('Delete this habit? Streak data will be lost.')) return;
+  const habits = DB.get('habits').filter(h=>h.id!==id);
+  DB.set('habits', habits);
+  renderHabitsScreen();
+  renderHomeStreakWidget();
+}
+
+// ── Home streak widget ──
+function renderHomeStreakWidget(){
+  const {current} = calcOverallStreak();
+  const numEl = document.getElementById('home-streak-num');
+  if(numEl) numEl.textContent = current;
+
+  const habits = DB.get('habits');
+  const log = getHabitLogs()[todayStr()] || {};
+  const miniEl = document.getElementById('home-habits-mini');
+  if(miniEl){
+    const shown = habits.slice(0,5);
+    const extra = habits.length - 5;
+    miniEl.innerHTML = shown.map(h=>`
+      <div class="home-habit-dot${log[h.id]?' done':''}" title="${h.name}">${h.emoji}</div>
+    `).join('') + (extra>0?`<div class="home-habit-more">+${extra}</div>`:'');
+  }
+}
+
+// ── Confetti burst (CSS-only mini) ──
+function spawnConfetti(){
+  const colors=['#00F5A0','#FFB547','#5B8CFF','#FF6B6B','#C97FFF'];
+  const app = document.getElementById('app');
+  for(let i=0;i<18;i++){
+    const dot = document.createElement('div');
+    const x = 20+Math.random()*60;
+    const color = colors[Math.floor(Math.random()*colors.length)];
+    dot.style.cssText=`position:absolute;width:8px;height:8px;border-radius:50%;
+      background:${color};left:${x}%;top:50%;z-index:600;
+      animation:confettiFloat ${0.6+Math.random()*0.8}s ease forwards;
+      animation-delay:${Math.random()*0.3}s;pointer-events:none;`;
+    app.appendChild(dot);
+    setTimeout(()=>dot.remove(), 1500);
+  }
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATION SYSTEM
+// ─────────────────────────────────────────────
+
+// ── In-app notification store ──
+const NOTIF_TYPES = {
+  study:   {icon:'📚', color:'t-mint'},
+  mock:    {icon:'📈', color:'t-blue'},
+  streak:  {icon:'🔥', color:'t-yellow'},
+  war:     {icon:'⚔️', color:'t-red'},
+  timer:   {icon:'⏱', color:'t-mint'},
+  weak:    {icon:'⚠️', color:'t-yellow'},
+  diary:   {icon:'📔', color:'t-blue'},
+  general: {icon:'🔔', color:'t-mint'},
+};
+
+function pushNotif(title, msg, type='general', persist=true){
+  const notifs = DB.get('notifications');
+  const n = {
+    id: 'n'+Date.now()+Math.floor(Math.random()*1000),
+    title, msg, type,
+    time: Date.now(),
+    read: false
+  };
+  if(persist){
+    notifs.unshift(n);
+    // Keep max 50
+    DB.set('notifications', notifs.slice(0,50));
+    updateNotifBadge();
+  }
+  showToast(title, msg, type);
+  // Also fire browser notification if granted
+  fireBrowserNotif(title, msg, type);
+}
+
+// ── Toast ──
+function showToast(title, msg, type='general', duration=5000){
+  const tc = document.getElementById('toast-container');
+  const nt = NOTIF_TYPES[type] || NOTIF_TYPES.general;
+  const id = 'toast-'+Date.now();
+  const el = document.createElement('div');
+  el.className = `toast ${nt.color}`;
+  el.id = id;
+  el.innerHTML = `
+    <div class="toast-icon">${nt.icon}</div>
+    <div class="toast-body">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>
+    <div class="toast-close" onclick="dismissToast('${id}')">✕</div>
+    <div class="toast-progress" style="animation-duration:${duration}ms;background:currentColor;opacity:.35;"></div>
+  `;
+  tc.appendChild(el);
+  setTimeout(()=>dismissToast(id), duration);
+}
+function dismissToast(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('removing');
+  setTimeout(()=>el.remove(), 250);
+}
+
+// ── Notification badge ──
+function updateNotifBadge(){
+  const unread = DB.get('notifications').filter(n=>!n.read).length;
+  const badge = document.getElementById('notif-badge');
+  if(unread > 0){
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+// ── Notification panel ──
+function openNotifPanel(){
+  document.getElementById('notif-panel').classList.add('open');
+  renderNotifList();
+  // Mark all as read
+  const notifs = DB.get('notifications').map(n=>({...n, read:true}));
+  DB.set('notifications', notifs);
+  updateNotifBadge();
+}
+function closeNotifPanel(){
+  document.getElementById('notif-panel').classList.remove('open');
+}
+function clearAllNotifs(){
+  if(confirm('Clear all notifications?')){
+    DB.set('notifications',[]);
+    updateNotifBadge();
+    renderNotifList();
+  }
+}
+function renderNotifList(){
+  const notifs = DB.get('notifications');
+  const el = document.getElementById('notif-list-inner');
+  if(!notifs.length){
+    el.innerHTML=`<div class="notif-empty">
+      <div class="notif-empty-icon">🔔</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;">All clear, warrior</div>
+      <div style="font-size:12px;">No notifications yet</div>
+    </div>`;
+    return;
+  }
+  // Group by Today / Earlier
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayNotifs = notifs.filter(n=>n.time >= todayStart.getTime());
+  const oldNotifs   = notifs.filter(n=>n.time <  todayStart.getTime());
+  let html = '';
+  if(todayNotifs.length){
+    html += `<div class="notif-section-label">Today</div>`;
+    html += todayNotifs.map(n=>notifItemHTML(n)).join('');
+  }
+  if(oldNotifs.length){
+    html += `<div class="notif-section-label">Earlier</div>`;
+    html += oldNotifs.map(n=>notifItemHTML(n)).join('');
+  }
+  el.innerHTML = html;
+}
+function notifItemHTML(n){
+  const nt = NOTIF_TYPES[n.type] || NOTIF_TYPES.general;
+  const ago = timeAgo(n.time);
+  return `<div class="notif-item${n.read?'':' unread'}">
+    <div class="notif-item-icon">${nt.icon}</div>
+    <div class="notif-item-body">
+      <div class="notif-item-title">${n.title}</div>
+      <div class="notif-item-msg">${n.msg}</div>
+      <div class="notif-item-time">${ago}</div>
+    </div>
+  </div>`;
+}
+function timeAgo(ts){
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff/60000);
+  const h = Math.floor(diff/3600000);
+  const d = Math.floor(diff/86400000);
+  if(m < 1)  return 'Just now';
+  if(m < 60) return `${m}m ago`;
+  if(h < 24) return `${h}h ago`;
+  return `${d}d ago`;
+}
+
+// ── Browser notifications ──
+function requestNotifPermission(){
+  if(!('Notification' in window)){
+    document.getElementById('notif-perm-status').textContent='❌ Browser does not support notifications';
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    document.getElementById('notif-perm-status').textContent='✅ Notifications already enabled!';
+    showToast('Notifications Active','Browser notifications are enabled!','study');
+    return;
+  }
+  Notification.requestPermission().then(perm=>{
+    if(perm === 'granted'){
+      document.getElementById('notif-perm-status').textContent='✅ Enabled! You will receive study reminders.';
+      showToast('🔔 Notifications Enabled','You will now receive study reminders!','study');
+      const s = DB.getObj('settings'); s.notifGranted=true; DB.setObj('settings',s);
+    } else {
+      document.getElementById('notif-perm-status').textContent='❌ Permission denied. Enable in browser settings.';
+    }
+  });
+}
+function fireBrowserNotif(title, body, type){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification(`⚔️ GATE War Room — ${title}`, {
+      body,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230B0F1A"/><text y="44" x="10" font-size="40">⚔️</text></svg>',
+      badge:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="%2300F5A0"/></svg>',
+      tag: 'warroom-'+type,
+      silent: false
+    });
+  } catch(e){}
+}
+
+// ── Reminder settings ──
+function toggleReminderDetail(){
+  const card = document.getElementById('reminder-detail-card');
+  card.classList.toggle('open');
+  loadReminderSettings();
+}
+function toggleMasterReminder(el){
+  el.classList.toggle('on');
+  const on = el.classList.contains('on');
+  const s = DB.getObj('settings');
+  s.remindersEnabled = on;
+  DB.setObj('settings',s);
+  document.getElementById('reminder-status-sub').textContent = on ? 'Active — tap to configure' : 'Off — tap to configure';
+  if(on){
+    showToast('Reminders On','Study reminders are now active!','general');
+    scheduleSmartChecks();
+  }
+}
+function saveReminderTimes(){
+  const s = DB.getObj('settings');
+  s.reminders = {
+    morning: document.getElementById('rem-morning').value,
+    block1:  document.getElementById('rem-block1').value,
+    block2:  document.getElementById('rem-block2').value,
+    evening: document.getElementById('rem-evening').value,
+    night:   document.getElementById('rem-night').value,
+    mockAlert:   document.getElementById('rem-mock-toggle').classList.contains('on'),
+    weakAlert:   document.getElementById('rem-weak-toggle').classList.contains('on'),
+    streakAlert: document.getElementById('rem-streak-toggle').classList.contains('on'),
+    focusAlert:  document.getElementById('rem-focus-toggle').classList.contains('on'),
+  };
+  DB.setObj('settings',s);
+  showToast('Reminders Saved','Your schedule has been updated','general',3000);
+}
+function loadReminderSettings(){
+  const s = DB.getObj('settings');
+  const r = s.reminders || {};
+  if(r.morning) document.getElementById('rem-morning').value = r.morning;
+  if(r.block1)  document.getElementById('rem-block1').value  = r.block1;
+  if(r.block2)  document.getElementById('rem-block2').value  = r.block2;
+  if(r.evening) document.getElementById('rem-evening').value = r.evening;
+  if(r.night)   document.getElementById('rem-night').value   = r.night;
+  if(r.mockAlert   === false) document.getElementById('rem-mock-toggle').classList.remove('on');
+  if(r.weakAlert   === false) document.getElementById('rem-weak-toggle').classList.remove('on');
+  if(r.streakAlert === false) document.getElementById('rem-streak-toggle').classList.remove('on');
+  if(r.focusAlert  === false) document.getElementById('rem-focus-toggle').classList.remove('on');
+  // Update master toggle + status
+  const on = s.remindersEnabled !== false;
+  if(on) document.getElementById('reminder-master-toggle').classList.add('on');
+  document.getElementById('reminder-status-sub').textContent = on ? 'Active — tap to configure' : 'Off — tap to configure';
+  // Browser permission status
+  if('Notification' in window){
+    const perm = Notification.permission;
+    const el = document.getElementById('notif-perm-status');
+    if(perm === 'granted') el.textContent = '✅ Browser notifications enabled';
+    else if(perm === 'denied') el.textContent = '❌ Permission denied — enable in browser settings';
+    else el.textContent = '⚠️ Click button above to enable browser notifications';
+  }
+}
+
+// ── Smart check engine (runs on page load + every minute) ──
+function scheduleSmartChecks(){
+  smartCheck(); // run immediately
+  setInterval(smartCheck, 60000); // every minute
+}
+function smartCheck(){
+  const s = DB.getObj('settings');
+  if(s.remindersEnabled === false) return;
+  const r = s.reminders || {};
+  const now = new Date();
+  const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const lastCheck = s._lastCheck || '';
+  if(lastCheck === hhmm) return; // already fired this minute
+  s._lastCheck = hhmm; DB.setObj('settings',s);
+
+  // Time-based reminders
+  const timeReminders = [
+    {key:'morning', title:'🌅 Good Morning, Warrior!',    msg:'Time to start your study session. Discipline today = AIR tomorrow.',  type:'study'},
+    {key:'block1',  title:'📚 Study Block 1',             msg:'First focus session starting now. Open your planner and get going!',  type:'study'},
+    {key:'block2',  title:'⚔️ Afternoon Grind',           msg:'Second session time! No mercy — pick your weakest subject.',          type:'study'},
+    {key:'evening', title:'🌙 Evening Revision',          msg:'Revise today\'s topics. Quick notes + formulas before dinner.',       type:'study'},
+    {key:'night',   title:'🛌 Log Your Day',              msg:'Write your diary entry and plan tomorrow\'s battle.',                  type:'diary'},
+  ];
+  timeReminders.forEach(tr=>{
+    if(r[tr.key] && r[tr.key] === hhmm){
+      pushNotif(tr.title, tr.msg, tr.type);
+    }
+  });
+
+  // Smart alerts (run once daily — morning time)
+  if(r.morning && r.morning === hhmm){
+    runSmartAlerts(r);
+  }
+}
+function runSmartAlerts(r){
+  // 1. Mock due alert
+  if(r.mockAlert !== false){
+    const mocks = DB.get('mocks');
+    if(mocks.length){
+      const lastMock = new Date(mocks[mocks.length-1].date+'T00:00:00');
+      const daysSince = Math.floor((Date.now()-lastMock)/(1000*60*60*24));
+      if(daysSince >= 5){
+        pushNotif('📈 Mock Test Due!', `Last mock was ${daysSince} days ago. Schedule one today — consistent mocks = rank improvement.`, 'mock');
+      }
+    } else {
+      pushNotif('📈 Take Your First Mock!', 'No mocks logged yet. A mock test is the fastest way to find your weak spots.', 'mock');
+    }
+  }
+
+  // 2. Weak subject alert
+  if(r.weakAlert !== false){
+    const WEAK_SUBJECTS = ['TOC','Compiler Design'];
+    const sub = WEAK_SUBJECTS[Math.floor(Math.random()*WEAK_SUBJECTS.length)];
+    pushNotif('⚠️ Weak Zone Alert', `${sub} needs attention today. Your accuracy in this subject is below target.`, 'weak');
+  }
+
+  // 3. Streak guard — if no diary entry today, fire in evening
+  if(r.streakAlert !== false){
+    const diary = DB.get('diary');
+    const todayStr = todayISO();
+    const studiedToday = diary.some(e=>e.date===todayStr);
+    if(!studiedToday){
+      pushNotif('🔥 Streak Alert!', 'No study logged today yet. Don\'t break your streak — even 30 minutes counts!', 'streak');
+    }
+  }
+
+  // 4. Countdown milestone notifications
+  const now = new Date();
+  const daysLeft = Math.ceil((EXAM_DATE - now)/(1000*60*60*24));
+  const milestones = [365,300,200,100,90,60,30,14,7,3,1];
+  if(milestones.includes(daysLeft)){
+    pushNotif(
+      `⚔️ ${daysLeft} Days to GATE 2027!`,
+      daysLeft <= 30
+        ? `Only ${daysLeft} days left. WAR MODE: 8+ hours minimum. No excuses.`
+        : `${daysLeft} days remaining. Stay consistent — every session matters.`,
+      daysLeft <= 30 ? 'war' : 'general'
+    );
+  }
+}
+
+// ── Focus session notification ──
+// Override timerTick to add notifications on session complete
+function timerTick(){
+  timerState.secs--;
+  if(timerState.secs<=0){
+    if(timerState.isFocus){
+      timerState.todayMins+=timerState.focusMins;
+      timerState.todaySessions++;
+      const sessions=DB.get('focus_sessions');
+      sessions.push({mins:timerState.focusMins,date:todayISO(),ts:Date.now()});
+      DB.set('focus_sessions',sessions);
+      // 🔔 Session complete notification
+      pushNotif(
+        '⏱ Focus Session Complete!',
+        `${timerState.focusMins}-min session done. Total today: ${timerState.todayMins} mins. Take a ${timerState.breakMins}-min break.`,
+        'timer'
+      );
+    } else {
+      // Break over
+      pushNotif(
+        '📚 Break Over — Back to War!',
+        `${timerState.breakMins}-min break done. Next focus session starting now. Stay sharp.`,
+        'study'
+      );
+    }
+    timerState.isFocus=!timerState.isFocus;
+    timerState.secs=(timerState.isFocus?timerState.focusMins:timerState.breakMins)*60;
+    document.getElementById('timer-modal').classList.add('flash-complete');
+    setTimeout(()=>document.getElementById('timer-modal').classList.remove('flash-complete'),2000);
+    updateTimerQuote();
+  }
+  updateTimerDisplay();
+}
+
+// ── Init notification system ──
+function initNotifications(){
+  updateNotifBadge();
+  scheduleSmartChecks();
+  loadReminderSettings();
+}
+
+// ─────────────────────────────────────────────
+// PWA SYSTEM
+// ─────────────────────────────────────────────
+
+let _pwaInstallPrompt = null;
+let _pwaInstalled = false;
+
+// ── 1. Inject manifest dynamically as a Blob ──
+function injectPWAManifest(){
+  const icons = [
+    { src: buildIconDataURL(192), sizes:'192x192', type:'image/png', purpose:'any maskable' },
+    { src: buildIconDataURL(512), sizes:'512x512', type:'image/png', purpose:'any maskable' }
+  ];
+  const manifest = {
+    name: 'GATE 2027 – War Room',
+    short_name: 'War Room',
+    description: "Rohan's GATE CS 2027 strategic preparation system",
+    start_url: './',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#0B0F1A',
+    theme_color: '#0B0F1A',
+    categories: ['education','productivity'],
+    icons
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+  const url  = URL.createObjectURL(blob);
+  document.getElementById('pwa-manifest').href = url;
+}
+
+// Build a simple icon as a canvas data URL
+function buildIconDataURL(size){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  // Background
+  ctx.fillStyle = '#0B0F1A';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, size * 0.22);
+  ctx.fill();
+  // Mint glow circle
+  const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size*0.45);
+  grad.addColorStop(0, 'rgba(0,245,160,0.18)');
+  grad.addColorStop(1, 'rgba(0,245,160,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  // ⚔️ emoji
+  ctx.font = `${size * 0.52}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('⚔️', size/2, size/2 + size*0.03);
+  // Bottom label
+  ctx.fillStyle = '#00F5A0';
+  ctx.font = `bold ${size * 0.1}px Poppins, sans-serif`;
+  ctx.fillText('WAR ROOM', size/2, size * 0.87);
+  return c.toDataURL('image/png');
+}
+
+// ── 2. Register Service Worker (Blob-based, works in single-file HTML) ──
+function registerServiceWorker(){
+  if(!('serviceWorker' in navigator)){
+    setPWACheck('sw', false, 'Service Worker not supported');
+    return;
+  }
+  const swCode = `
+const CACHE = 'warroom-v1.3';
+const ASSETS = ['./', './index.html'];
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{})
+  );
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  if(e.request.method !== 'GET') return;
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      const fetchPromise = fetch(e.request)
+        .then(res => {
+          if(res && res.status === 200){
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+          }
+          return res;
+        })
+        .catch(() => cached);
+      return cached || fetchPromise;
+    })
+  );
+});
+self.addEventListener('message', e => {
+  if(e.data === 'skipWaiting') self.skipWaiting();
+});
+`;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  const swURL  = URL.createObjectURL(swBlob);
+
+  navigator.serviceWorker.register(swURL, {scope: './'})
+    .then(reg => {
+      setPWACheck('sw', true, 'Service Worker active ✓');
+      // Cache the current page HTML for offline
+      caches.open('warroom-v1.3').then(c => {
+        c.put('./', new Response(document.documentElement.outerHTML, {
+          headers:{'Content-Type':'text/html; charset=utf-8'}
+        }));
+      });
+      setPWACheck('offline', true, 'Offline cache ready ✓');
+    })
+    .catch(err => {
+      // Blob SW may be blocked in some browsers — show manual instructions
+      setPWACheck('sw', null, 'Register via browser menu');
+      setPWACheck('offline', null, 'Available after install');
+    });
+}
+
+// ── 3. PWA Install Prompt ──
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaInstallPrompt = e;
+  // Show banner after 3 seconds if not already installed
+  if(!_pwaInstalled && !DB.getObj('pwa').dismissed){
+    setTimeout(showInstallBanner, 3000);
+  }
+  // Show button in settings
+  const btn = document.getElementById('pwa-install-btn');
+  if(btn) btn.style.display = 'block';
+  setPWACheck('manifest', true, 'App manifest ready ✓');
+  updatePWAStatusText();
+});
+
+window.addEventListener('appinstalled', () => {
+  _pwaInstalled = true;
+  _pwaInstallPrompt = null;
+  dismissInstallBanner();
+  const btn = document.getElementById('pwa-install-btn');
+  if(btn) btn.style.display = 'none';
+  const msg = document.getElementById('pwa-installed-msg');
+  if(msg) msg.style.display = 'block';
+  document.getElementById('pwa-install-status-text').textContent = 'Installed on your device ✓';
+  const s = DB.getObj('pwa'); s.installed = true; DB.setObj('pwa', s);
+  showToast('📱 App Installed!', 'War Room is now on your home screen. Open it anytime — even offline!', 'streak');
+  pushNotif('📱 War Room Installed!', 'App successfully installed. Offline mode active.', 'general');
+});
+
+function triggerInstall(){
+  if(_pwaInstallPrompt){
+    _pwaInstallPrompt.prompt();
+    _pwaInstallPrompt.userChoice.then(choice => {
+      if(choice.outcome === 'accepted'){
+        _pwaInstallPrompt = null;
+      }
+    });
+  } else {
+    showManualInstallInstructions();
+  }
+}
+
+function showInstallBanner(){
+  document.getElementById('pwa-install-banner').classList.add('show');
+}
+function dismissInstallBanner(){
+  document.getElementById('pwa-install-banner').classList.remove('show');
+  const s = DB.getObj('pwa'); s.dismissed = true; DB.setObj('pwa', s);
+}
+
+function showManualInstallInstructions(){
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const el = document.getElementById('pwa-manual-msg');
+  if(!el) return;
+  if(isIOS){
+    el.innerHTML = `<strong style="color:var(--text);">iOS वर Install करायला:</strong><br>
+    1. Safari मध्ये उघडा<br>
+    2. Share button दाबा (□↑)<br>
+    3. "Add to Home Screen" निवडा<br>
+    4. "Add" दाबा — झालं! ✅`;
+  } else if(isAndroid){
+    el.innerHTML = `<strong style="color:var(--text);">Android वर Install करायला:</strong><br>
+    1. Chrome मध्ये उघडा<br>
+    2. Menu (⋮) → "Add to Home screen"<br>
+    3. "Install" दाबा — झालं! ✅`;
+  } else {
+    el.innerHTML = `<strong style="color:var(--text);">Desktop वर Install करायला:</strong><br>
+    Chrome/Edge address bar च्या शेवटी install icon दाबा, किंवा<br>
+    Menu → "Install GATE War Room" निवडा.`;
+  }
+  el.style.display = 'block';
+}
+
+// ── 4. Online / Offline detection ──
+function initOfflineDetection(){
+  function setOnline(){
+    document.getElementById('offline-badge').classList.remove('show');
+  }
+  function setOffline(){
+    document.getElementById('offline-badge').classList.add('show');
+    showToast('📡 Offline Mode', 'No internet — War Room works offline. Data is safe.', 'general', 4000);
+  }
+  window.addEventListener('online',  setOnline);
+  window.addEventListener('offline', setOffline);
+  if(!navigator.onLine) setOffline();
+}
+
+// ── 5. Checklist helpers ──
+function setPWACheck(key, status, label){
+  const icon = document.getElementById('pwa-chk-'+key);
+  const lbl  = document.getElementById('pwa-lbl-'+key);
+  if(!icon || !lbl) return;
+  if(status === true)  { icon.textContent = '✅'; lbl.classList.add('done'); }
+  else if(status === false){ icon.textContent = '❌'; }
+  else                 { icon.textContent = '⚠️'; }
+  lbl.textContent = label;
+}
+
+function updatePWAStatusText(){
+  const el = document.getElementById('pwa-install-status-text');
+  if(!el) return;
+  const s = DB.getObj('pwa');
+  if(s.installed || window.matchMedia('(display-mode: standalone)').matches){
+    el.textContent = 'Installed — running as app ✓';
+    document.getElementById('pwa-installed-msg').style.display = 'block';
+    document.getElementById('pwa-install-btn').style.display = 'none';
+    _pwaInstalled = true;
+  } else if(_pwaInstallPrompt){
+    el.textContent = 'Ready to install — tap button below';
+  } else {
+    el.textContent = 'Open in Chrome/Safari to install';
+  }
+}
+
+// ── 6. Init PWA ──
+function initPWA(){
+  injectPWAManifest();
+  registerServiceWorker();
+  initOfflineDetection();
+
+  // Check if already running as standalone (already installed)
+  if(window.matchMedia('(display-mode: standalone)').matches){
+    _pwaInstalled = true;
+    setPWACheck('sw',       true, 'Service Worker active ✓');
+    setPWACheck('manifest', true, 'App manifest ready ✓');
+    setPWACheck('https',    true, 'Running as installed app ✓');
+    setPWACheck('offline',  true, 'Offline cache ready ✓');
+    updatePWAStatusText();
+    return;
+  }
+
+  // HTTPS check
+  const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.protocol === 'file:';
+  setPWACheck('https', isSecure, isSecure ? 'Secure context ✓' : 'Needs HTTPS to install');
+
+  // Manifest check (we inject it dynamically)
+  setPWACheck('manifest', true, 'App manifest injected ✓');
+
+  setTimeout(updatePWAStatusText, 1500);
+}
+</script>
+</body>
+</html>
